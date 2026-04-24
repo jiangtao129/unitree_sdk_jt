@@ -7,8 +7,16 @@ build
 #cland
 .cache
 
-# Unitree SLAM 运行产物 / 日志 / 编译出的 ELF
-unitree_slam/bin/
+# Unitree SLAM 运行日志 (每次跑都变, 不入库)
+unitree_slam/bin/logs/
+
+# 由 unitree_slam/example/src/keyDemo*.cpp 编出来的 ELF (源码在仓库里, 别入二进制)
+unitree_slam/bin/keyDemo
+unitree_slam/bin/keyDemo[0-9]
+unitree_slam/bin/keyDemo[0-9][0-9]
+
+# 注意: unitree_slam/bin/ 下的 mid360_driver / unitree_slam / xt16_driver 是宇树
+# 官方提供的闭源 aarch64 二进制 (无源码), 必须入库, 故不在此忽略.
 
 # Python 缓存
 __pycache__/
