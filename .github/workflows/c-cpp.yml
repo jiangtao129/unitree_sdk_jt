@@ -21,9 +21,14 @@ jobs:
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
-        apt-get install -y cmake g++ build-essential libyaml-cpp-dev libeigen3-dev
+        apt-get install -y cmake g++ build-essential libyaml-cpp-dev libeigen3-dev python3 python3-pip
         
     - name: CMake build
       run: |
         cmake -Bbuild
         cmake --build build -j$(nproc)
+
+    - name: Run unified verify (build + python smoke)
+      # scripts/verify.sh 是仓库唯一真相验证入口; 第 1 段会复用上面已编好的 build/,
+      # 第 2 段跑 view_map.py --selftest, 缺 python deps 时优雅 skip.
+      run: bash ./scripts/verify.sh
