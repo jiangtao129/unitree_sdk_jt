@@ -117,3 +117,91 @@ bash scripts/verify.sh
 - Review agent **不要**直接 push 同一 PR 分支去"顺手修一下"。
 - 任何 agent **不要**替人勾 "Auto-merge" / "Branch protection" 这种网页设置;
   只能输出待办清单提醒人类去做。
+
+---
+
+## 7. Review guidelines (for Codex)
+
+> 这一节专门给 OpenAI Codex GitHub Review 看。Codex 默认只 flag P0/P1,本节
+> 把"什么是本仓库的 P0/P1"写清楚,避免它对真实 SLAM/控制风险欠 review、
+> 又把 typo 当成阻塞。
+
+### 7.1 严重等级定义
+
+| 级别 | 含义 | Codex 必须 |
+|---|---|---|
+| **P0** | 上机会出事故 / 损坏机器人 / 仓库不可恢复 | **明确写 BLOCK,要求 PR 修复后再合** |
+| **P1** | 上机会回归功能 / 显著影响精度 / CI 一定红 | flag 出来,标"建议修复" |
+| **P2** | 代码质量问题 (可读性、重复) | 可选评论,不阻塞 |
+| **P3** | typo / 注释拼写 / 个人风格偏好 | **不要 flag** |
+
+### 7.2 本仓库的 P0 清单 (任何一项命中,Codex 必须 BLOCK)
+
+1. **闭源动态库改动**:`unitree_slam/lib/*.so` 任何修改/替换 → 拒绝
+2. **IMU↔LiDAR 外参乱改**:`unitree_slam/config/pl_mapping/*.yaml` 中
+   `pose_imu_lidar` 数组数值变化 (除非 PR Risk 段明说重新做了标定)
+3. **控制循环未限幅写**:`SportClient::Move(vx, vy, vyaw)` 调用前没有对
+   `vx` / `vyaw` 做 `std::clamp` 或 abs 上限保护 (上限不写死会让狗子失控)
+4. **C++ UB**:野指针 / use-after-free / 数组越界 / 整数除零 / data race
+   (尤其 `keyDemo3` 里的 `std::atomic` 配套使用错误)
+5. **直推 main / `--force` / 删 main 历史**:出现在 PR diff 或 commit history
+6. **Secret 入仓库**:任何看起来像 token/PAT/SSH key/密码的字符串
+
+### 7.3 本仓库的 P1 清单 (flag 但不一定 BLOCK)
+
+1. **爬楼控制增益巨变**:`keyDemo3.cpp` 的 `climb_vx` / `K_y` /
+   `max_yaw_offset` / `K_psi` / `vyaw_max` / `align_limit` / `align_tol` /
+   `align_timeout` 任何 ≥30% 的调整 → 提示"需要硬件回归"
+2. **SLAM 关键参数**:`cube_len` / `det_range` / `lidar_scan_max_range` /
+   `map_resolution` / `scan_resolution` / `save_pcd_res` 任何调整 → 提示
+   "影响建图/重定位行为,需要重建图验证"
+3. **DDS topic 名变化**:`rt/sportmodestate` / `rt/utlidar/...` /
+   `rt/unitree/slam_lidar/...` 等订阅/发布名改动 → 必须确认 dock 端
+   也同步 (Codex 提示即可)
+4. **任务列表持久化逻辑**:`dirty` flag / `loadFloorListFromDisk` /
+   `saveTaskListFun` / case 's'/S'/d'/f' 的状态机改动 → 提醒可能丢点
+5. **verify.sh 跳过/绕过**:任何修改让 `bash scripts/verify.sh` 不再
+   覆盖原有检查 → BLOCK 候选
+6. **CMakeLists 的 link 顺序/缺库**:可能编过但运行时 dlopen 报错的
+   依赖问题
+7. **Python view_map.py 的 stub 顺序**:`_install_open3d_ml_stubs()`
+   必须在 `import open3d` **之前**调用,顺序错会重新触发 ABI 错
+
+### 7.4 P2/P3 — 不要 flag 的事
+
+- 中文注释 typo / 标点
+- markdown 文档拼写 / 排版
+- C++ 代码风格 (花括号位置、空格、命名风格);本仓库**没有**强制 clang-format
+- `.plan.md` 计划文档里的过期内容 (它们就是历史记录,不需要更新)
+- `unitree_sdk2` 上游 (即 `untreerobotics/unitree_sdk2` 同步过来的代码)
+  本身的代码风格;只 review jiangtao 在 fork 上加的部分
+
+### 7.5 Review 输出格式
+
+Codex 在 PR 上贴 review 时,**优先按下面格式分组**,方便人快速扫:
+
+```
+## P0 (Blocking)
+- <文件:行号> 一句话, 说"为什么会出事"
+
+## P1 (Recommend fix)
+- <文件:行号> 一句话, 给修复方向
+
+## P2 (Optional)
+- <文件:行号> 一句话, 可选优化
+
+## 通过 / 风险评估
+- 这次改动是否需要硬件回归 (是 / 否 / 不确定)
+- 是否修改了关键 SLAM/控制参数 (是 / 否)
+```
+
+### 7.6 触发完整 cloud task (而不仅是 review)
+
+如果 Codex review 发现需要它**动手修**而不是只评论,人类可以在 PR 评论
+里写:
+- `@codex fix the CI failures` — 让 Codex 开新分支修 CI
+- `@codex add unit test for <function>` — 让 Codex 补测试
+- `@codex review for security regressions` — 重 review 一次,焦点是安全
+
+普通 `@codex` (后面什么都不加 review) 等同于触发 cloud task,会消耗
+更多额度,**评审请明确写 `@codex review`**。
