@@ -162,6 +162,11 @@ namespace unitree::robot::slam
 
     public:
         // Climb control tunables. Public so you can tweak and rebuild fast.
+        // Hard upper bound on forward velocity actually fed to SportClient::Move.
+        // Even if climb_vx is mistakenly set higher (typo / runtime patch), the
+        // clamp at the call site below keeps the dog inside the stairs-safe
+        // envelope (~1.0 m/s for Go2 EDU on stairs).
+        static constexpr float kClimbVxMax = 1.0f;
         float climb_vx = 0.35f;        // constant forward velocity while climbing (m/s)
         float K_y = 0.5f;              // cross-track gain: dy 1 m -> desired_yaw offset 28.6 deg
         float max_yaw_offset = 0.52f;  // clamp on |desired_yaw - stair_yaw_body| (30 deg)
@@ -596,7 +601,10 @@ void unitree::robot::slam::TestClient::climbStairsFun()
             float yerr = wrapPi(desired_yaw - yawc);
             float vyaw = std::max(-vyaw_max, std::min(vyaw_max, K_psi * yerr));
 
-            sportClient.Move(climb_vx, 0.0f, vyaw);
+            // Safety clamp on forward velocity before issuing the motion command.
+            // climb_vx is a public tunable; without this clamp a typo could push
+            // the dog above the stairs-safe envelope (kClimbVxMax = 1.0 m/s).
+            sportClient.Move(std::clamp(climb_vx, 0.0f, kClimbVxMax), 0.0f, vyaw);
 
             if ((++log_cnt % 25) == 0)
             {
