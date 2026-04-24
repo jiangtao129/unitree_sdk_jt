@@ -1,0 +1,60 @@
+---
+description: Repository-wide workflow rules for Cursor agent in unitree_sdk_jt
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Cursor 在本仓库的硬性行为约束
+
+> 这是 alwaysApply 规则,优先级高于 chat 里的临时指令。
+> 如果用户的请求与本规则冲突,**先暂停并告知用户冲突**,等用户明确放行再继续。
+
+## 必须做
+
+1. **任何代码改动前**先读 `AGENTS.md`,确认改动范围在允许内。
+2. **任何代码改动后**至少跑一次 `bash scripts/verify.sh`,失败则进入调试循环修复。
+3. 改完代码后,**必须**走 feature/fix 分支 + PR 入 `main`:
+   - `git checkout -b feature/<topic>` (或 `fix/<bug>`)
+   - `git add` / `git commit` (commit message 用 conventional 风格: `feat:`/`fix:`/`chore:` 等)
+   - `git push -u origin <branch>`
+   - `gh pr create --base main --head <branch>` 并按 PR 模板填好 Summary / Test plan / Risk
+   - `gh pr merge --auto --squash <pr>` (如果仓库已开 auto-merge)
+4. 涉及 GitHub 网页操作 (auto-merge / branch protection / Codex App) 不能自动完成时,
+   **明确输出"人工待办清单"**,不要假装已完成。
+
+## 严格禁止
+
+1. **禁止** `git push` 直接推 `main`(无论本地 / 远端任何分支名,远端都是 `origin/main`)。
+2. **禁止** `git push --force` 到任何已被他人引用的分支 (含 `main` 与已开 PR 的分支)。
+3. **禁止** 修改 `~/.ssh/config` 里跟 dock IP / 上游账号相关的现有条目;
+   只允许追加,且不能写入仓库。
+4. **禁止** 把以下东西 `git add`:
+   `unitree_slam/bin/`、`*.log`、`__pycache__/`、`*.pyc`、`build/`、`.cache/`、
+   任何包含 token/PAT/IP 的文件。
+5. **禁止** 为了让 verify / CI 变绿而注释测试、删检查、把 `exit 1` 改成 `exit 0`。
+6. **禁止** 在没有用户明确指示的情况下做大规模重构、文件改名、目录搬迁、批量风格调整。
+
+## C++ / SLAM 特定约束
+
+- `unitree_slam/lib/*.so` 是 Unitree 闭源动态库,**只读**,任何理由都不要修改/替换。
+- `unitree_slam/example/src/keyDemo*.cpp` 改动后,build 必须过;**禁止**只编不验。
+- 改动 `unitree_slam/config/*.yaml` 时,保留 `Go2_W` 段的详细中文注释格式作为风格参考。
+- 阻塞性改动 (改 SLAM 配置、改 IMU 外参、改控制循环增益等) **必须**在 PR 描述里明说
+  "需要硬件回归测试",由人类决定是否合并。
+
+## 工具调用约束
+
+- 优先用 Cursor 内置文件工具 (Read/Write/StrReplace/Glob/Grep) 而不是 shell 的 cat/sed/grep。
+- 跑长命令 (cmake build / scp 大文件) 时设置合理超时,**不要**让 shell 卡死。
+- `gh` CLI 在 `~/.local/bin/gh` (用户已登录 jiangtao129);PR 操作直接用它。
+- SSH 走 443 (`~/.ssh/config` 已有 `Host github.com` 条目),改 git remote 时
+  **必须**用 `git@github.com:...` 格式,不要改成 https。
+
+## 完成标准
+
+每次任务收尾必须输出:
+1. 改动文件清单 (用 `git diff --stat` 或类似方式总结)。
+2. 跑了哪些验证命令,结果如何。
+3. PR 链接 (如已开 PR)。
+4. 还剩下什么需要人类一次性配置的事项。
