@@ -16,3 +16,9 @@ __pycache__/
 
 # 通用日志
 *.log
+
+# 编辑器/工具产生的备份与临时文件 (避免备份不小心被 commit, 见 baseline 清理时的 .bak 残留)
+*.bak
+*.bak.*
+*.swp
+*~
