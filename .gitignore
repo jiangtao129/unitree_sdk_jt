@@ -6,3 +6,13 @@ build
 
 #cland
 .cache
+
+# Unitree SLAM 运行产物 / 日志 / 编译出的 ELF
+unitree_slam/bin/
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 通用日志
+*.log

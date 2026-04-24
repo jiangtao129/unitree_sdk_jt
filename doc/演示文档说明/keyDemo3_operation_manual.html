@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>keyDemo3 Operation Manual</title>
+<style>
+@page {
+    size: A4;
+    margin: 16mm 14mm 16mm 14mm;
+}
+
+html, body {
+    font-family: "Noto Sans CJK SC", "Noto Sans CJK",
+                 "WenQuanYi Zen Hei", "SimSun", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #1f2328;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 700;
+    line-height: 1.25;
+    margin-top: 1.2em;
+    margin-bottom: 0.55em;
+    page-break-after: avoid;
+}
+h1 { font-size: 20pt; border-bottom: 2px solid #d0d7de; padding-bottom: 0.25em; }
+h2 { font-size: 15pt; border-bottom: 1px solid #d0d7de; padding-bottom: 0.2em; }
+h3 { font-size: 12.5pt; }
+h4 { font-size: 11pt; }
+
+p { margin: 0.4em 0 0.6em; }
+
+ul, ol { padding-left: 1.4em; margin: 0.4em 0 0.6em; }
+li { margin: 0.15em 0; }
+
+blockquote {
+    margin: 0.6em 0;
+    padding: 0.4em 0.9em;
+    border-left: 4px solid #d0d7de;
+    color: #57606a;
+    background: #f6f8fa;
+}
+
+code {
+    font-family: "JetBrains Mono", "Source Code Pro", "Consolas",
+                 "DejaVu Sans Mono", monospace;
+    font-size: 9.5pt;
+    background: #eff1f4;
+    padding: 0.08em 0.35em;
+    border-radius: 3px;
+}
+
+pre {
+    font-family: "JetBrains Mono", "Source Code Pro", "Consolas",
+                 "DejaVu Sans Mono", monospace;
+    font-size: 9pt;
+    background: #1f2328;
+    color: #e5e7eb;
+    padding: 10px 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    page-break-inside: avoid;
+    margin: 0.6em 0;
+}
+pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+}
+
+table {
+    border-collapse: collapse;
+    margin: 0.6em 0;
+    width: 100%;
+    page-break-inside: avoid;
+    font-size: 10pt;
+}
+th, td {
+    border: 1px solid #d0d7de;
+    padding: 5px 9px;
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    background: #f6f8fa;
+    font-weight: 700;
+}
+tr:nth-child(even) td {
+    background: #fbfcfd;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #d0d7de;
+    margin: 1.2em 0;
+}
+
+em { color: #0969da; font-style: italic; }
+strong { color: #24292f; }
+
+/* avoid breaking list/table bullets across pages if possible */
+li, tr { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+<h1>Go2 EDU 分层建图 + 爬楼导航演示操作手册</h1>
+<blockquote>
+<p>目标：让一个<strong>不了解代码细节</strong>的操作员照着这份手册从零开始，完成两层地图建图、路点录制，并在现场只按几次键完成"楼下 → 爬楼 → 楼上"的全自动导航演示。</p>
+</blockquote>
+<hr />
+<h2>0. 目录</h2>
+<ul>
+<li>
+<ol>
+<li>系统概述</li>
+</ol>
+</li>
+<li>
+<ol start="2">
+<li>硬件与网络前置</li>
+</ol>
+</li>
+<li>
+<ol start="3">
+<li>代码部署与编译</li>
+</ol>
+</li>
+<li>
+<ol start="4">
+<li>一次性准备：建两张地图 + 录路点</li>
+</ol>
+</li>
+<li>
+<ol start="5">
+<li>正式演示（全程只按 6 次键）</li>
+</ol>
+</li>
+<li>
+<ol start="6">
+<li>实时监控指标</li>
+</ol>
+</li>
+<li>
+<ol start="7">
+<li>按键速查表</li>
+</ol>
+</li>
+<li>
+<ol start="8">
+<li>调参手册</li>
+</ol>
+</li>
+<li>
+<ol start="9">
+<li>日志与文件产出</li>
+</ol>
+</li>
+<li>
+<ol start="10">
+<li>故障排查</li>
+</ol>
+</li>
+</ul>
+<hr />
+<h2>1. 系统概述</h2>
+<p>本方案在 Unitree <code>keyDemo</code> 的基础上自研 <code>keyDemo3</code>：</p>
+<ul>
+<li>用 Unitree 官方 SLAM 负责楼下/楼上两张 PCD 地图的建图与重定位导航</li>
+<li>楼梯过渡区由 <code>keyDemo3</code> 直接驱动 Go2 EDU 的 SportClient 盲走爬楼，其中用 <strong>Cross-Track Error（CTE）闭环</strong>保证直线爬楼、消除初始朝向偏差</li>
+<li>路点管理采用显式流：<code>s</code> 存内存、<code>S</code> 显式落盘到 json、<code>d</code> 先 reload 再执行，避免内存/磁盘数据不一致</li>
+<li>终端输出全程 tee 到带时间戳的 <code>keyDemo3_*.log</code>，便于事后回看</li>
+</ul>
+<p>演示一次要按的键一共 6 次：<code>a → 1</code>，<code>d</code>，<code>c</code>，<code>c</code>，<code>a → 2</code>，<code>d</code>。</p>
+<hr />
+<h2>2. 硬件与网络前置</h2>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>机器狗</td>
+<td>Go2 EDU / Developer</td>
+</tr>
+<tr>
+<td>激光雷达</td>
+<td>Livox Mid-360（或 XT16，驱动换成 <code>xt16_driver</code>）</td>
+</tr>
+<tr>
+<td>计算单元</td>
+<td>Go2 拓展坞（192.168.8.3）</td>
+</tr>
+<tr>
+<td>演示主机到拓展坞 SSH</td>
+<td><code>ssh unitree@192.168.8.3</code>（公钥免密）</td>
+</tr>
+<tr>
+<td>Go2 通信网卡</td>
+<td><code>go2eth</code></td>
+</tr>
+</tbody>
+</table>
+<p>目录约定：</p>
+<table>
+<thead>
+<tr>
+<th>端</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开发机（本地 PC）</td>
+<td><code>/home/jiangtao/huazhijian/project/old_go2/unitree_sdk2/</code></td>
+</tr>
+<tr>
+<td>Go2 拓展坞（dock）</td>
+<td><code>/home/unitree/jiangtao/unitree_sdk2/</code></td>
+</tr>
+<tr>
+<td>Unitree 官方部署</td>
+<td><code>/unitree/module/unitree_slam/</code>（只读，<code>keyDemo</code> 官方二进制在这里）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>重要</strong>：<code>/unitree/module/unitree_slam/</code> 是 root 所有的只读部署。<code>keyDemo3</code> 部署在 <code>/home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/</code>，和官方互不干扰。</p>
+</blockquote>
+<hr />
+<h2>3. 代码部署与编译 （修改代码前先 copy 到自己的目录下）</h2>
+<p>首次部署（已完成，仅记录步骤供复查）：</p>
+<pre><code class="language-bash"># 1. 本地同步源码到 dock
+scp unitree_slam/example/src/keyDemo3.cpp \
+    unitree@192.168.8.3:/home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/src/
+
+# 2. dock 上 aarch64 编译
+ssh unitree@192.168.8.3
+cd /home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/build
+cmake ..
+make keyDemo3 -j
+</code></pre>
+<p>产物位置（dock 上）：<code>/home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/build/keyDemo3</code>。</p>
+<p>后续修改后的增量编译：<code>cd .../example/build &amp;&amp; make keyDemo3</code>，只要 2 秒。</p>
+<hr />
+<h2>4. 一次性准备：建两张地图 + 录路点</h2>
+<p><strong>这一步只需要做一次</strong>，之后正式演示直接复用。</p>
+<h3>4.1 启动底座服务（3 个终端 ssh 到 dock 开 3 个窗口）</h3>
+<p><strong>终端 1：启动 SLAM 服务</strong></p>
+<pre><code class="language-bash">cd /unitree/module/unitree_slam/bin
+./unitree_slam
+</code></pre>
+<p><strong>终端 2：启动 Mid-360 雷达</strong></p>
+<pre><code class="language-bash">cd /unitree/module/unitree_slam/bin
+./mid360_driver
+# 若是 XT16 雷达: ./xt16_driver
+</code></pre>
+<p><strong>终端 3：启动 keyDemo3（我们自研的按键工具）</strong></p>
+<pre><code class="language-bash">cd /home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/build
+./keyDemo3 go2eth
+</code></pre>
+<p><strong>终端 4（可选）：RViz2 可视化，只在建图/对点时开</strong></p>
+<pre><code class="language-bash">cd /unitree/module/unitree_slam/rviz2
+rviz2 -d mapping.rviz
+# 重定位阶段改用 relocation.rviz
+</code></pre>
+<blockquote>
+<p><strong>关键注意</strong>：<strong>按 <code>w</code> 保存 PCD 之前必须关闭 RViz2</strong>，否则 PCD 落盘会失败或超时。拓展坞资源有限，建议建图过程中也不开 RViz2，需要看效果时临时开一下再关。</p>
+</blockquote>
+<h3>4.2 建一楼地图</h3>
+<p><strong>把狗放在"一楼演示起点"，面朝一楼目标方向放稳。</strong></p>
+<p>在终端 3 的 keyDemo3 里：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>按键</th>
+<th>动作 / 期望输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>q</code></td>
+<td>开始建图，终端输出 <code>startMapping statusCode:0</code> 和 <code>Successfully started mapping.</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>—</td>
+<td>用遥控器控制狗把一楼全部区域走一遍，最后<strong>停在楼梯入口、正对楼梯</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>（关闭 RViz2）</td>
+<td>如果开了 RViz 要先关</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>w</code> → 输入 <code>1</code></td>
+<td>存成 <code>/home/unitree/floor1.pcd</code>。期望看到 <code>Save pcd successfully</code> 和 <code>&gt;&gt;&gt; Mapping session closed.</code>（keyDemo3 会自动清理 slam node）</td>
+</tr>
+</tbody>
+</table>
+<h3>4.3 建二楼地图</h3>
+<p><strong>手抱/遥控把狗运到二楼起点（楼梯顶部着陆点附近），面朝二楼目标方向放稳。</strong></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>按键</th>
+<th>动作 / 期望输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>q</code></td>
+<td>开始新建图会话。由于 4.2 已 <code>stopNode</code>，这次不会报 <code>Exceeding the maximum value range</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>—</td>
+<td>遥控走完二楼所有路径</td>
+</tr>
+<tr>
+<td>3</td>
+<td>（关闭 RViz2）</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>w</code> → 输入 <code>2</code></td>
+<td>存成 <code>/home/unitree/floor2.pcd</code></td>
+</tr>
+</tbody>
+</table>
+<h3>4.4 录一楼路点</h3>
+<p><strong>把狗放回一楼起点。</strong></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>按键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>a</code> → 输入 <code>1</code></td>
+<td>加载 floor1.pcd 做重定位，<code>currentFloor = 1</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>—</td>
+<td>观察终端，等 <code>statusCode:0</code> 和 <code>info:"Successfully started relocation."</code>，确认 curPose 不再是全 0</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>s</code></td>
+<td>记录当前位姿到内存（提示 <code>size=1</code>，<code>dirty=true, press 'S' to persist.</code>）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>—</td>
+<td>遥控走到下一个路点</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>s</code></td>
+<td>记录下一个点（size=2, 3, ...）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>...</td>
+<td>重复走 + <code>s</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>最后一个点</strong>要录在<strong>楼梯入口、正对楼梯</strong>的位姿</td>
+<td>这个点是爬楼前的停车点，它的朝向 yaw 会被 keyDemo3 当作"楼梯方向"，非常关键</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>S</code></td>
+<td><strong>大写 S</strong> 显式落盘，终端打印 <code>[S] floor1 (N pts) -&gt; /home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/build/f1.json [OK]</code> 才算成功</td>
+</tr>
+</tbody>
+</table>
+<h3>4.5 录二楼路点</h3>
+<p><code>a</code> → <code>2</code> 切到二楼，重复 4.4 的 3–8 步。第一个点一般是"楼梯口刚爬上来的着陆点"，最后一个点是二楼终点。录完再按 <code>S</code>，看到 <code>[S] floor2 (M pts) -&gt; .../f2.json [OK]</code>。</p>
+<p>至此，两张地图 + 两条路点 list 持久化到磁盘。下次演示开机即可用。</p>
+<hr />
+<h2>5. 正式演示（全程只按 6 次键）</h2>
+<p><strong>把狗放回一楼演示起点，面朝目标方向。</strong></p>
+<p>三个终端启动服务（和 4.1 完全一样）：</p>
+<pre><code class="language-bash"># 终端 1
+cd /unitree/module/unitree_slam/bin &amp;&amp; ./unitree_slam
+
+# 终端 2
+cd /unitree/module/unitree_slam/bin &amp;&amp; ./mid360_driver
+
+# 终端 3
+cd /home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/build
+./keyDemo3 go2eth
+</code></pre>
+<p>keyDemo3 启动时会自动 <code>loadTaskListFun</code> 把 f1.json / f2.json 读回内存，你会看到：</p>
+<pre><code>Loaded floor1 N pts from f1.json
+Loaded floor2 M pts from f2.json
+</code></pre>
+<p>确认两个数字和你录的一致。</p>
+<p>然后在终端 3 依次按键：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>按键</th>
+<th>发生什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>a</code> → <code>1</code></td>
+<td>加载 floor1 重定位，狗在原点附近 ICP 收敛</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>d</code></td>
+<td>keyDemo3 从 <code>f1.json</code> reload + 开始依次导航到每个路点。终端打印 <code>[d] Reloaded floor 1 (N pts) from disk, starting navigation...</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>—</td>
+<td>等狗自动走完一楼路点，最后停在楼梯口正对楼梯</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>c</code></td>
+<td>开始 CTE 闭环盲走爬楼。终端每 0.5 秒打印 <code>[climb] dx=.. dy=.. offs=.. yerr=.. vyaw=..</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>—</td>
+<td>观察狗爬楼，到二楼起点后</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>c</code></td>
+<td>停止爬楼，狗进入 BalanceStand，SLAM 恢复</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>a</code> → <code>2</code></td>
+<td>切楼上地图，狗在二楼起点附近重定位</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>d</code></td>
+<td>执行二楼路点，狗走到二楼终点</td>
+</tr>
+</tbody>
+</table>
+<p><strong>演示结束。</strong></p>
+<hr />
+<h2>6. 实时监控指标</h2>
+<h3>爬楼过程中终端会持续打印</h3>
+<pre><code>[climb] dx=3.452 dy=0.008 offs=-0.004 yerr=-0.002 vyaw=-0.003
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+<th>期望值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dx</code></td>
+<td>已沿楼梯方向走了多少米</td>
+<td>随时间单调增长</td>
+</tr>
+<tr>
+<td><code>dy</code></td>
+<td>当前横向偏离参考直线多少米（左正右负）</td>
+<td><strong>|dy| ≤ 0.05 m</strong> 是理想，收敛到一个小常数</td>
+</tr>
+<tr>
+<td><code>offs</code></td>
+<td>CTE 算出的 desired_yaw 偏移</td>
+<td>典型几毫弧度</td>
+</tr>
+<tr>
+<td><code>yerr</code></td>
+<td>当前 yaw 与 desired_yaw 的差</td>
+<td>接近 0 表示跟得住</td>
+</tr>
+<tr>
+<td><code>vyaw</code></td>
+<td>实际下发的转向速度</td>
+<td>接近 0 表示走得稳</td>
+</tr>
+</tbody>
+</table>
+<h3>爬楼完成后查看</h3>
+<ul>
+<li>重定位终端回执 <code>statusCode:0</code>，<code>Successfully started relocation.</code></li>
+<li>若是 <code>errorCode:509 ICP low</code>：说明狗不在二楼起点附近，ICP 初值离真实位置太远，需人工扶回起点再按 <code>a → 2</code></li>
+</ul>
+<hr />
+<h2>7. 按键速查表</h2>
+<table>
+<thead>
+<tr>
+<th>键</th>
+<th>动作</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>q</code></td>
+<td>开始建图</td>
+<td>仅准备阶段用</td>
+</tr>
+<tr>
+<td><code>w</code></td>
+<td>结束建图 + 存 PCD（选 1 / 2）</td>
+<td>自动 <code>stopNode</code>；<code>currentFloor</code> 归零</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>加载地图 + 重定位（选 1 / 2）</td>
+<td>后续 s/d 绑定这个楼层</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>把<strong>当前位姿</strong>记到内存 task list</td>
+<td><strong>dirty=true，必须 S 才能落盘</strong></td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>把内存 task list 写到 json（<strong>覆盖</strong>）</td>
+<td>打印绝对路径</td>
+</tr>
+<tr>
+<td><code>d</code></td>
+<td>执行当前楼层 task list</td>
+<td>dirty 时拒绝；不 dirty 时先 reload 再执行</td>
+</tr>
+<tr>
+<td><code>f</code></td>
+<td>清空当前楼层 task list（内存）</td>
+<td>也会变 dirty</td>
+</tr>
+<tr>
+<td><code>c</code></td>
+<td>爬楼 toggle：开始 CTE / 停止</td>
+<td>仅在狗对准楼梯、靠近楼梯口时按</td>
+</tr>
+<tr>
+<td><code>z</code> / <code>x</code></td>
+<td>暂停 / 恢复 SLAM 导航</td>
+<td></td>
+</tr>
+<tr>
+<td>其他键</td>
+<td>触发 <code>stopNodeFun</code> 兜底</td>
+<td>误按会结束 slam node</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. 调参手册</h2>
+<p>所有参数都是 keyDemo3.cpp 里 <code>public float</code> 成员，改完重新 <code>make</code> 2 秒见效。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>默认</th>
+<th>什么时候调</th>
+<th>调整方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>climb_vx</code></td>
+<td>0.35 m/s</td>
+<td>爬楼太慢 / 太快撞台阶</td>
+<td>推荐 0.2 ~ 0.5</td>
+</tr>
+<tr>
+<td><code>K_y</code></td>
+<td>0.5 rad/m</td>
+<td>狗对横向漂移反应迟钝</td>
+<td>调大（如 0.8）；震荡就调小</td>
+</tr>
+<tr>
+<td><code>K_psi</code></td>
+<td>1.5</td>
+<td>yaw 跟踪迟缓</td>
+<td>调大</td>
+</tr>
+<tr>
+<td><code>vyaw_max</code></td>
+<td>0.4 rad/s</td>
+<td>转向过猛</td>
+<td>调小</td>
+</tr>
+<tr>
+<td><code>max_yaw_offset</code></td>
+<td>0.52 rad (30°)</td>
+<td>偏差大时不希望猛转</td>
+<td>调小到 0.2 (11°)</td>
+</tr>
+<tr>
+<td><code>align_limit</code></td>
+<td>0.0873 rad (5°)</td>
+<td>初始偏差大，希望预对齐多转一点</td>
+<td>调大到 0.175 (10°)</td>
+</tr>
+<tr>
+<td><code>align_tol</code></td>
+<td>0.03 rad (1.7°)</td>
+<td>预对齐收敛不到位</td>
+<td>调小到 0.01</td>
+</tr>
+</tbody>
+</table>
+<p>源码中位置：</p>
+<pre><code>/home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/src/keyDemo3.cpp
+     约 140 行 public: 成员
+</code></pre>
+<p>修改并同步到 dock：</p>
+<pre><code class="language-bash"># 开发机本地改完
+scp unitree_slam/example/src/keyDemo3.cpp \
+    unitree@192.168.8.3:/home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/src/
+
+# dock 上增量编译
+ssh unitree@192.168.8.3 \
+  'cd /home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/build &amp;&amp; make keyDemo3'
+</code></pre>
+<hr />
+<h2>9. 日志与文件产出</h2>
+<table>
+<thead>
+<tr>
+<th>产物</th>
+<th>位置（dock）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一楼点云地图</td>
+<td><code>/home/unitree/floor1.pcd</code></td>
+<td>按 <code>w</code> → <code>1</code> 生成</td>
+</tr>
+<tr>
+<td>二楼点云地图</td>
+<td><code>/home/unitree/floor2.pcd</code></td>
+<td>按 <code>w</code> → <code>2</code> 生成</td>
+</tr>
+<tr>
+<td>一楼路点</td>
+<td><code>.../example/build/f1.json</code></td>
+<td>按 <code>S</code> 生成，<strong>绝对路径</strong>会打印到终端</td>
+</tr>
+<tr>
+<td>二楼路点</td>
+<td><code>.../example/build/f2.json</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td>运行日志</td>
+<td><code>.../example/build/keyDemo3_YYYYMMDD_HHMMSS.log</code></td>
+<td>每次启动自动创建，终端所有输出 tee 到此</td>
+</tr>
+<tr>
+<td>Unitree 服务日志</td>
+<td><code>/unitree/module/unitree_slam/bin/logs/</code></td>
+<td>官方 slam_server / gridmap / planner 日志</td>
+</tr>
+</tbody>
+</table>
+<p>查看本次爬楼的详细过程：</p>
+<pre><code class="language-bash">cd /home/unitree/jiangtao/unitree_sdk2/unitree_slam/example/build
+ls -lt keyDemo3_*.log | head -1        # 最新一份
+less -R keyDemo3_20260422_172600.log   # -R 让 less 正常显示 ANSI 颜色
+grep '\[climb\]' keyDemo3_*.log        # 只看爬楼控制循环输出
+</code></pre>
+<hr />
+<h2>10. 故障排查</h2>
+<h3>10.1 按 <code>d</code> 看到红色 "UNSAVED changes"</h3>
+<pre><code>[d] Floor 1 has UNSAVED changes in memory (5 pts). Press 'S' to save first, or 'f' to discard.
+</code></pre>
+<p>原因：按 <code>s</code> 加了点但忘记 <code>S</code>。修法：先按 <code>S</code> 看到 <code>[OK]</code>，再按 <code>d</code>。</p>
+<h3>10.2 按 <code>q</code> 第二次建图报 "Exceeding the maximum value range"</h3>
+<p>这是 FAST-LIO 的局部 cube 还绑在上一次建图的原点。<strong>keyDemo3 已经修了</strong>：按 <code>w</code> 会自动 <code>stopNode</code>。如果你用的是<strong>原版 <code>keyDemo</code></strong> 就会遇到；统一改用 <code>keyDemo3</code> 即可。</p>
+<h3>10.3 按 <code>a</code> 报 <code>errorCode:509 "ICP low"</code></h3>
+<p>狗当前位置 / 姿态与期望的初始位姿（默认 <code>(0,0,0, q_w=1)</code>，即建图起点）差太远。修法：</p>
+<ul>
+<li>把狗推回对应楼层的<strong>建图起点</strong>再按 <code>a</code></li>
+<li>或者录路点时把第一个点就录成"起点"，每次 <code>a</code> 之后立刻 <code>d</code> 从起点开始走</li>
+</ul>
+<h3>10.4 按 <code>w</code> 存 PCD 超时报 <code>statusCode:3202</code></h3>
+<p>多半是 RViz2 还开着占用 IO。关掉 RViz2 再按 <code>w</code>。</p>
+<h3>10.5 按 <code>c</code> 报红色 <code>No rt/sportmodestate samples received yet</code></h3>
+<p>Go2 的 sport service 和 keyDemo3 没连上 DDS。检查：</p>
+<ul>
+<li>启动 keyDemo3 时的网卡参数是否正确（本手册用 <code>go2eth</code>）</li>
+<li><code>/unitree/module/unitree_slam/bin/unitree_slam</code> 是不是正常跑着</li>
+<li>遥控器能否正常控制狗；不能的话先修 DDS</li>
+</ul>
+<h3>10.6 爬楼偏航严重（dy 持续扩大）</h3>
+<p>看 <code>keyDemo3_*.log</code>：</p>
+<ul>
+<li><code>dy</code> 单向增大到 &gt; 0.3 m：说明 <code>K_y</code> 太小，CTE 拉不回。把 <code>K_y</code> 从 0.5 调到 0.8 试试</li>
+<li><code>dy</code> 来回震荡：<code>K_y</code> 或 <code>K_psi</code> 太大，调小</li>
+<li>爬楼起步 1~2 s 就大偏差，之后稳住：正常（CTE 稳态误差），只要 <code>|dy| &lt; 0.05 m</code> 就没事</li>
+</ul>
+<h3>10.7 爬完按 <code>a → 2</code> 重定位不收敛</h3>
+<p>楼上地图 <code>floor2.pcd</code> 建图起点和狗实际爬完楼的落点偏差太大（&gt; 0.5 m）。修法：</p>
+<ul>
+<li><strong>建 floor2 地图时从"狗爬完楼自然停下来的那个点"开始</strong>（按 q 那一刻就是楼上地图原点）</li>
+<li>或者在 <code>keyDemo3.cpp</code> 的 <code>case 'a'</code> 里把默认初始 pose <code>poseDate{}</code> 改成实测的楼顶落点偏移（不推荐，改代码不如改建图起点）</li>
+</ul>
+<hr />
+<h2>附录：工作流概念图</h2>
+<pre><code>┌── 一次性准备 ─────────────────────────────────┐
+│                                                 │
+│  q → 走楼下 → w→1      建 floor1.pcd           │
+│  q → 走楼上 → w→2      建 floor2.pcd           │
+│                                                 │
+│  a→1 → s×N 录路点 → S  持久化 f1.json          │
+│  a→2 → s×M 录路点 → S  持久化 f2.json          │
+│                                                 │
+└─────────────────────────────────────────────────┘
+
+┌── 每次演示 ───────────────────────────────────┐
+│                                                 │
+│  a→1 → d           一楼自动导航到楼梯口        │
+│  c                 开始 CTE 爬楼                │
+│  c                 到楼顶停                     │
+│  a→2 → d           二楼自动导航到终点          │
+│                                                 │
+└─────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<p><em>文档版本：v1.0 / 2026-04-22</em><br />
+<em>对应代码：<code>keyDemo3.cpp</code> 1002 行</em></p>
+</body>
+</html>

@@ -9,11 +9,11 @@ int main(int32_t argc, const char** argv)
 {
     if (argc < 2)
     {
-        std::cout << "Usage: robot_state_client_example [NetWorkInterface(eth0)] [ServiceName(sport_mode)]" << std::endl;
+        std::cout << "Usage: robot_state_client_example [NetWorkInterface(go2eth)] [ServiceName(sport_mode)]" << std::endl;
         exit(0);
     }
 
-    std::string networkInterface = "eth0", serviceName = "sport_mode";
+    std::string networkInterface = "go2eth", serviceName = "sport_mode";
 
     if (argc > 1)
     {

@@ -1,0 +1,137 @@
+G1:
+    imu_topic: "rt/utlidar/imu_livox_mid360"   #/livox/imu  rt/utlidar/imu_livox_mid360
+    lidar_topic: "rt/utlidar/cloud_livox_mid360"
+    imu_acc_multi: 10.0 #10.0
+    imu_gyro_multi: 1.0
+    filter_num: 8 #8
+    lidar_scan_min_range: 0.25
+    lidar_scan_max_range: 30.0
+    map_frame: "map"
+    body_frame: "livox_frame"
+    pub_point_topic: "rt/unitree/slam_mapping/points"
+    pub_odom_topic: "rt/unitree/slam_mapping/odom"
+    imu_init_num: 100
+    vel_cov: 20.0
+    acc_cov: 50000.0
+    gyro_cov: 1000.0
+    b_acc_cov: 0.0001
+    b_gyro_cov: 0.0001
+    lidar_meas_cov_inv: 100.0
+    imu_meas_acc_cov_inv: 1.0
+    imu_meas_gyro_cov_inv: 10.0
+    satu_acc: 20.0
+    satu_gyro: 35.0
+    scan_resolution: 0.3 #0.3
+    map_resolution: 0.3
+    near_search_num: 5.0
+    move_thresh: 1.5
+    det_range: 60.0
+    cube_len: 300.0
+    pose_imu_lidar: [1.0, 0.0, 0.0, 0.0, -0.011, -0.02329, 0.04412]
+    save_pcd: true
+    save_pcd_res: 0.15
+    dist_sq_threshold: 2.0
+    plane_threshold: 0.1
+    ground_ang: 75.0     # degree
+
+# =============================================================================
+# Go2: Go2 普通版 (足式) 的建图配置, 简注版; 详细解释见下方 Go2_W
+# =============================================================================
+Go2:
+    imu_topic: "rt/unitree/slam_lidar/imu"             # IMU 话题
+    lidar_topic: "rt/unitree/slam_lidar/points"        # LiDAR 话题
+    imu_acc_multi: 10.0          # IMU acc 缩放 (Mid360 0.1g → m/s²)
+    imu_gyro_multi: 1.0          # IMU gyro 缩放 (rad/s)
+    filter_num: 25               # 点云抽稀间隔 (每 N 点取 1)
+    lidar_scan_min_range: 0.25   # 近端剔除 [m]
+    lidar_scan_max_range: 30.0   # 远端剔除 [m]: >30m 的点直接丢，不参与配准也不入图
+    map_frame: "map"             # 地图坐标系
+    body_frame: "livox_frame"    # LiDAR 坐标系
+    pub_point_topic: "rt/unitree/slam_mapping/points"  # 发布: 当前帧点云
+    pub_odom_topic: "rt/unitree/slam_mapping/odom"     # 发布: LiDAR 里程计
+    imu_init_num: 100            # 静止初始化 IMU 帧数
+    vel_cov: 20.0                # ESKF 速度过程噪声
+    acc_cov: 50000.0             # ESKF 加速度过程噪声
+    gyro_cov: 1000.0             # ESKF 陀螺仪过程噪声
+    b_acc_cov: 0.0001            # acc bias 随机游走
+    b_gyro_cov: 0.0001           # gyro bias 随机游走
+    lidar_meas_cov_inv: 100.0    # LiDAR 信任度 (大=更信)
+    imu_meas_acc_cov_inv: 1.0    # IMU acc 信任度
+    imu_meas_gyro_cov_inv: 10.0  # IMU gyro 信任度
+    satu_acc: 20.0               # IMU acc 饱和保护 [m/s²]
+    satu_gyro: 35.0              # IMU gyro 饱和保护 [rad/s]
+    scan_resolution: 0.3         # 当前帧体素下采样 [m]
+    map_resolution: 0.3          # 全局地图体素 [m]
+    near_search_num: 5.0         # 最近邻搜索点数
+    move_thresh: 1.5             # ikd-Tree 滑窗更新阈值 [m]
+    det_range: 60.0              # ikd-Tree 局部地图活动半径：以 LiDAR 为中心 ±60m 的点保留参与配准
+    cube_len: 1000.0             # 全局地图立方体边长 [m]: 以建图原点为中心的立方体, 超出报错
+    pose_imu_lidar: [1.0, 0.0, 0.0, 0.0, -0.011, -0.02329, 0.04412]   # IMU→LiDAR 外参 [qw qx qy qz tx ty tz]
+    save_pcd: true               # 是否保存 PCD
+    save_pcd_res: 0.15           # PCD 保存分辨率 [m]
+    dist_sq_threshold: 2.0       # 平面拟合外点阈值 [m²]
+    plane_threshold: 0.1         # 平面厚度阈值
+    ground_ang: 75.0             # 地面法向夹角阈值 [deg]
+
+# =============================================================================
+# Go2_W: Go2 + 轮足版 (Wheeled) 的建图配置, 各字段含义详注版
+# 其它 profile (Go2 / G1) 同名字段语义一致, 简注里看不懂的回这里查
+# =============================================================================
+Go2_W:
+    # -------------------- Topic / Frame: 订阅与发布 --------------------
+    imu_topic: "rt/unitree/slam_lidar/imu"             # 订阅的 IMU 话题; 改: 切换 IMU 数据源 (机器狗内置 / 外接)
+    lidar_topic: "rt/unitree/slam_lidar/points"        # 订阅的 LiDAR 点云话题; 改: 切换 LiDAR 数据源
+    map_frame: "map"                                   # SLAM 全局地图坐标系名 (TF 树根); 一般不改
+    body_frame: "livox_frame"                          # LiDAR 自身坐标系名; 必须与 URDF/外参一致, 改了会让 pose_imu_lidar 失效
+    pub_point_topic: "rt/unitree/slam_mapping/points"  # 输出: 当前帧/局部地图点云; 给下游可视化/避障订阅
+    pub_odom_topic: "rt/unitree/slam_mapping/odom"     # 输出: LiDAR 里程计 (位姿); 下游导航必须订阅这个
+
+    # -------------------- IMU 标定 / 初始化 --------------------
+    imu_acc_multi: 10.0    # IMU 加速度缩放系数, 把原始单位转成 m/s² (Mid360 内部 0.1g → ×10 = m/s²); 改错: 重力异常 → 位姿发散
+    imu_gyro_multi: 1.0    # IMU 陀螺仪缩放系数, 1.0 = 数据已是 rad/s; 改错: 旋转方向/速度错乱
+    imu_init_num: 100      # 启动时静止采集多少帧 IMU 用于估 bias/重力方向; 调大: 更准但启动慢; 调小: 启动快但 bias 偏
+
+    # -------------------- IMU 异常值保护 (单帧饱和直接丢) --------------------
+    satu_acc: 20.0         # IMU 加速度饱和阈值 [m/s²]; 单帧 |acc| 超过就视作异常丢弃; 调大: 容忍剧烈撞击; 调小: 误剔正常机动
+    satu_gyro: 35.0        # IMU 陀螺仪饱和阈值 [rad/s ≈ 2000°/s]; 同上
+
+    # -------------------- LiDAR 点云预处理 --------------------
+    filter_num: 25                # 点云抽稀间隔, 每 N 个点取 1 个 (Mid360 ~10w 点/帧, 25 → 4000 点/帧); 调大: 省 CPU 但稀疏配准糙; 调小: 精细但板卡吃紧
+    lidar_scan_min_range: 0.25    # [m] 小于此距离的点丢 (剔除 LiDAR 自体反射/狗腿遮挡); 一般 0.2~0.5
+    lidar_scan_max_range: 30.0    # [m] 大于此距离的点丢 (Mid360 远端噪声大); 调到 70: 室外更远但噪点入图; 调小: 室内省算力
+
+    # -------------------- ESKF 过程噪声 (值越大 → 预测模型越不可信, 越偏向量测) --------------------
+    vel_cov: 20.0          # 速度状态过程噪声; 调大: 模型更柔, 更跟 LiDAR (剧烈机动); 调小: 更信 IMU 预测 (平滑)
+    acc_cov: 50000.0       # 加速度过程噪声 (IMU 加速度本身就噪, 所以很大); 一般不动
+    gyro_cov: 1000.0       # 陀螺仪过程噪声; 一般不动
+    b_acc_cov: 0.0001      # 加速度 bias 随机游走方差; 调大: bias 跟得快但抖; 一般不动
+    b_gyro_cov: 0.0001     # 陀螺仪 bias 随机游走方差; 同上
+
+    # -------------------- ESKF 量测协方差的逆 (值越大 → 越信任该传感器, 收得越紧) --------------------
+    lidar_meas_cov_inv: 100.0      # LiDAR 量测信任度; 调大: 紧贴点云 (易抖动); 调小: 平滑但易漂
+    imu_meas_acc_cov_inv: 1.0      # IMU 加速度量测信任度; 一般不动
+    imu_meas_gyro_cov_inv: 10.0    # IMU 陀螺仪量测信任度; 一般不动
+
+    # -------------------- 地图分辨率 / 配准 --------------------
+    scan_resolution: 0.3   # [m] 当前帧体素下采样大小, 配准前抽稀; 调大: 配准点少算得快但糙; 调小: 慢且费内存
+    map_resolution: 0.3    # [m] 全局地图 (ikd-Tree) 维护的体素大小; 调大: 省内存, 细节糊; 室内推 0.1~0.2, 室外 0.3~0.5
+    near_search_num: 5.0   # 配准时每个点找 N 个最近邻做平面拟合; 调大: 鲁棒但慢; 调小: 快但不稳
+
+    # -------------------- ikd-Tree 局部地图 / 全局地图范围 --------------------
+    move_thresh: 1.5       # [m] 机器人累计移动超过该距离才触发 ikd-Tree 滑动窗口更新; 调大: 省算力但远端进图慢; 调小: 频繁更新
+    det_range: 60.0        # [m] ikd-Tree 局部地图活动半径 (以 LiDAR 为中心保留 ±det_range 的点参与配准); 调大: 视野远但内存涨; 调小: 适合长走廊
+    cube_len: 300.0        # [m] 全局地图立方体总边长 (以建图原点为中心 ±cube_len/2); 超出会报 "max range exceeded"; 大场景调到 1000+
+
+    # -------------------- 外参: IMU → LiDAR 的相对位姿 --------------------
+    # 格式 [qw, qx, qy, qz, tx, ty, tz], 平移单位 m; 当前是单位四元数 + 几厘米平移
+    # 改: 这是出厂标定值, 乱改会让 LiDAR 点云与 IMU 预测错位 → 整图歪斜/漂移
+    pose_imu_lidar: [1.0, 0.0, 0.0, 0.0, -0.011, -0.02329, 0.04412]
+
+    # -------------------- PCD 保存 --------------------
+    save_pcd: true         # 结束建图时是否保存 PCD; false: 不存盘 (调试时常用)
+    save_pcd_res: 0.15     # [m] 保存 PCD 时的下采样分辨率; 调小: PCD 更稠密体积更大; 调大: 文件小但糙
+
+    # -------------------- 平面 / 地面特征提取 --------------------
+    dist_sq_threshold: 2.0   # [m²] 平面拟合时点-平面距离平方阈值, 超出视作外点; 调大: 容忍噪点; 调小: 严格剔除
+    plane_threshold: 0.1     # 平面"厚度"阈值 (拟合残差); 调小: 只接受很平的面 (墙/地); 调大: 允许斜面参与
+    ground_ang: 75.0         # [deg] 法向量与垂直方向夹角 < 该值视为地面/水平面; 调小: 只挑严格水平地面; 调大: 把矮墙/斜坡也当地
