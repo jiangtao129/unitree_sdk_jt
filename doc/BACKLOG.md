@@ -12,11 +12,11 @@
 - **下一个**: PR #12 起,从 P0 优先级开始扫
 
 进度条(完成的项数 / 总项数):
-- P0 (实质性): 0 / 12
+- P0 (实质性): 1 / 12
 - P1 (有用): 0 / 25
 - P2 (锦上添花): 0 / 30
 - P3 (可选填充): 0 / 15
-- **总计**: **0 / 82**
+- **总计**: **1 / 82**
 
 ---
 
@@ -37,7 +37,7 @@
 
 | # | 类型 | 描述 | 文件 | 状态 | PR |
 |---|---|---|---|---|---|
-| P0-01 | fix | keyDemo2.cpp `climb_vx` 没 clamp,SportClient::Move 入口加保护(类比 PR #6) | `unitree_slam/example/src/keyDemo2.cpp` | [ ] | — |
+| P0-01 | fix | keyDemo2.cpp `climb_vx` 没 clamp,SportClient::Move 入口加保护(类比 PR #6) | `unitree_slam/example/src/keyDemo2.cpp` | [x] | #12 |
 | P0-02 | fix | keyDemo3.cpp pre-align 阶段(line ~565)的 `sportClient.Move(0.0f, 0.0f, vyaw)` 也用 clamp 写法,但 vyaw 这边其实已经 clamp,**核对**确认(可能是 P3) | `keyDemo3.cpp` | [ ] | — |
 | P0-03 | fix | keyDemo3.cpp termios SIGINT 异常路径没还原 → 加 atexit / signal handler 还原终端 | `keyDemo3.cpp` | [ ] | — |
 | P0-04 | fix | keyDemo3.cpp `case 'd'` 执行任务列表前没 timeout 包裹,SLAM `slam_server` 不响应时 client 永远阻塞 | `keyDemo3.cpp` | [ ] | — |

@@ -8,6 +8,7 @@
 #include <future>
 #include <thread>
 #include <atomic>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -95,6 +96,11 @@ namespace unitree::robot::slam
 
     public:
         // Phase 1 tunables
+        // Hard upper bound on forward velocity actually fed to SportClient::Move.
+        // Mirrors keyDemo3.cpp's kClimbVxMax safety cap; even if climb_vx is
+        // mistakenly set higher, the clamp at the call site keeps the dog
+        // inside the stairs-safe envelope (~1.0 m/s for Go2 EDU on stairs).
+        static constexpr float kClimbVxMax = 1.0f;
         float climb_vx = 0.35f; // forward velocity while climbing (m/s), adjust 0.2~0.5
 
         // Phase 2: map file paths and persistence targets
@@ -386,7 +392,10 @@ void unitree::robot::slam::TestClient::climbStairsFun()
             // if commands stop arriving, so we must refresh continuously.
             while (is_climbing.load())
             {
-                sportClient.Move(climb_vx, 0.0f, 0.0f);
+                // Safety clamp: same protection that keyDemo3.cpp added in PR #6.
+                // climb_vx is a public tunable; without this clamp a typo could
+                // push the dog above the stairs-safe envelope (kClimbVxMax = 1.0 m/s).
+                sportClient.Move(std::clamp(climb_vx, 0.0f, kClimbVxMax), 0.0f, 0.0f);
                 std::this_thread::sleep_for(std::chrono::milliseconds(20));
             }
         });
