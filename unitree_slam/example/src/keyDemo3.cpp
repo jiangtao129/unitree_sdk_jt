@@ -16,6 +16,7 @@
 #include <cmath>
 #include <chrono>
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <streambuf>
 #include <ctime>
@@ -957,7 +958,10 @@ int main(int argc, const char **argv)
     if (argc < 2)
     {
         std::cout << "Usage: " << argv[0] << " networkInterface" << std::endl;
-        exit(-1);
+        // exit(-1) gets truncated to 255 by 8-bit POSIX exit-code semantics,
+        // hiding "missing arg" behind the same code as a segfault. Use
+        // EXIT_FAILURE (= 1) and return so main can unwind cleanly.
+        return EXIT_FAILURE;
     }
 
     // Tee std::cout to a timestamped log file in the current working
