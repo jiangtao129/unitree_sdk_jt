@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# Cancel an in-flight run when the same PR (or branch) gets a new push.
+# Saves CI minutes and keeps the latest commit's status as the source of
+# truth for branch-protection's "build" required check.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest  # Use latest runner to host the container
