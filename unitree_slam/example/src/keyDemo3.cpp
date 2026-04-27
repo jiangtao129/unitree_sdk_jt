@@ -168,6 +168,10 @@ namespace unitree::robot::slam
         // clamp at the call site below keeps the dog inside the stairs-safe
         // envelope (~1.0 m/s for Go2 EDU on stairs).
         static constexpr float kClimbVxMax = 1.0f;
+        // Climb control loop period: SportClient::Move is republished at
+        // 1000/period_ms Hz. 20 ms = 50 Hz, the documented Go2 motion command
+        // rate; lower than ~33 Hz the dog will auto-brake during the gap.
+        static constexpr int kClimbLoopPeriodMs = 20;
         float climb_vx = 0.35f;        // constant forward velocity while climbing (m/s)
         float K_y = 0.5f;              // cross-track gain: dy 1 m -> desired_yaw offset 28.6 deg
         float max_yaw_offset = 0.52f;  // clamp on |desired_yaw - stair_yaw_body| (30 deg)
@@ -589,7 +593,7 @@ void unitree::robot::slam::TestClient::climbStairsFun()
         }
         float vyaw = std::clamp(K_psi * yerr, -vyaw_max, vyaw_max);
         sportClient.Move(0.0f, 0.0f, vyaw);
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(kClimbLoopPeriodMs));
     }
 
     // Step 5: lock P_start AFTER pre-align so that dy=0 at t=0 corresponds to
@@ -639,7 +643,7 @@ void unitree::robot::slam::TestClient::climbStairsFun()
                           << " yerr=" << yerr
                           << " vyaw=" << vyaw << std::endl;
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(kClimbLoopPeriodMs));
         }
     });
 }
