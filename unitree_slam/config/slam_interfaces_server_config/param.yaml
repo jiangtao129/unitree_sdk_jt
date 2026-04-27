@@ -1,3 +1,23 @@
+# =============================================================================
+# slam_server 启动参数 (硬件级 / 网络级). 跟 pl_mapping / pl_relocation 那两个
+# 算法参数文件不同, 这里是"slam_server 进程怎么找到 LiDAR 跟 IMU"的层级:
+#   network_interface  机器人主板上接 LiDAR 的网口名 (Go2 默认 go2eth, B2 是
+#                      eth0). 改 OS / 换网卡 时需同步.
+#   lidar_type         LiDAR 型号. mid360 / xt16 / robosense32. 决定走哪份
+#                      pl_mapping/<lidar_type>.yaml + pl_relocation/<lidar_type>.yaml
+#   lidar_ysn          LiDAR 序列号. Livox / Hesai 设备自己 burn 在硬件上,
+#                      多设备同网时用来选中正确那台.
+#   lidar_ip           LiDAR 在内部以太网上的 IP. 不要改, 跟 LiDAR 出厂烧录
+#                      绑定 (Go2 mid360 是 192.168.123.20, B2 robosense 是
+#                      192.168.124.20).
+#   odom_topic         机器人本体 odom 输入 (从控制器发出, slam_server 订阅
+#                      用来做 EKF / 时间戳对齐).
+#   imu_topic          IMU 输入 (一般也是控制器发的 dog_imu_raw).
+#   time_out_seconds   slam_server 等 LiDAR / IMU 第一帧的最长时间, 超过就
+#                      报启动失败 (B2 设 60s 因为有时雷达 boot 慢, Go2 30s).
+# =============================================================================
+
+# B2: 早期 B2 平台 + Robosense32 雷达
 B2:
   network_interface: "eth0"       #eth0/enp2s0/wlxfc221c3f66c8
   lidar_type: "robosense32"       #robosense32/xt16
