@@ -153,7 +153,7 @@
 | P3-F01 | doc/plan1-go2_edu_climb_stairs_via_keydemo_*.md 加 "Status: superseded by keyDemo3" header | `doc/plan1-*.md` | [x] | #46 |
 | P3-F02 | doc/plan2-climb-los-waypoint-following_*.md 加 status header | `doc/plan2-*.md` | [x] | #47 |
 | P3-F03 | doc/plan3-keydemo3_explicit_save_and_d-reload_*.md 加 status header | `doc/plan3-*.md` | [x] | #48 |
-| P3-F04 | doc/go2_slam_quick_start_via_keydemo_*.md 加 status header | `doc/go2_slam_*.md` | [ ] | — |
+| P3-F04 | doc/go2_slam_quick_start_via_keydemo_*.md 加 status header | `doc/go2_slam_*.md` | [x] | #49 |
 | P3-F05 | dimos_huazhijian_multi_agent_setup_guide_zh.md 移到 `doc/archive/`(归档原始模板) | `doc/dimos_huazhijian_multi_agent_setup_guide_zh.md` | [ ] | — |
 | P3-F06 | mid360.yaml G1 段也加一条注释指向 Go2_W 段 | `unitree_slam/config/pl_mapping/mid360.yaml` | [ ] | — |
 | P3-F07 | view_map.py 顶部 docstring 补 license | `view_map.py` | [ ] | — |
