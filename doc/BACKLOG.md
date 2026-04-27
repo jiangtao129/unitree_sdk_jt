@@ -12,11 +12,11 @@
 - **下一个**: PR #12 起,从 P0 优先级开始扫
 
 进度条(完成的项数 / 总项数):
-- P0 (实质性): 3 / 12
+- P0 (实质性): 4 / 12
 - P1 (有用): 8 / 25
 - P2 (锦上添花): 0 / 30
 - P3 (可选填充): 0 / 15
-- **总计**: **11 / 82**
+- **总计**: **12 / 82**
 
 ---
 
@@ -48,7 +48,7 @@
 | P0-09 | fix | climb_control.hpp 中 wrapPi 在 |angle|=π 时返回 -π 还是 +π?这是个 corner case 应该写 test 确认 | `climb_control.hpp` + `test_climb_control.cpp` | [ ] | — |
 | P0-10 | sec | .github/workflows/c-cpp.yml 用 `actions/checkout@v4` 不锁 SHA,被劫持风险 → pin 到具体 SHA | `.github/workflows/c-cpp.yml` | [ ] | — |
 | P0-11 | fix | unitree_slam/lib/*.so 是闭源 aarch64 binary,本机 verify.sh 跑 cmake build 时**不应该尝试链接它们**,目前是靠运气没出错 → 加 conditional skip | `CMakeLists.txt` | [ ] | — |
-| P0-12 | fix | scripts/verify.sh 末尾应该 `unset -e` 之后清 build 中间状态(避免 CI 缓存被脏数据污染) | `scripts/verify.sh` | [ ] | — |
+| P0-12 | fix | scripts/verify.sh 加 `trap EXIT` 在失败时打印明显的 FAILED banner(原描述说"清 build 中间状态"但 cmake 已自管理 BUILD_DIR; 真正改进是错误信号清晰化) | `scripts/verify.sh` | [x] | #23 |
 
 ---
 
