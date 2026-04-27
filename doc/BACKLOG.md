@@ -13,10 +13,10 @@
 
 进度条(完成的项数 / 总项数):
 - P0 (实质性): 3 / 12
-- P1 (有用): 0 / 25
+- P1 (有用): 1 / 25
 - P2 (锦上添花): 0 / 30
 - P3 (可选填充): 0 / 15
-- **总计**: **3 / 82**
+- **总计**: **4 / 82**
 
 ---
 
@@ -60,7 +60,7 @@
 
 | # | 描述 | 文件 | 状态 | PR |
 |---|---|---|---|---|
-| P1-A01 | keyDemo3.cpp line 544: `std::max(-align_limit, std::min(align_limit, real_err))` → `std::clamp(real_err, -align_limit, align_limit)` | `keyDemo3.cpp` | [ ] | — |
+| P1-A01 | keyDemo3.cpp line 544: `std::max(-align_limit, std::min(align_limit, real_err))` → `std::clamp(real_err, -align_limit, align_limit)` | `keyDemo3.cpp` | [x] | #15 |
 | P1-A02 | keyDemo3.cpp line 594: `std::max(-max_yaw_offset, std::min(max_yaw_offset, raw_offset))` → `std::clamp(...)` | `keyDemo3.cpp` | [ ] | — |
 | P1-A03 | keyDemo3.cpp line 597: vyaw 那个 max/min 嵌套同样 → `std::clamp` | `keyDemo3.cpp` | [ ] | — |
 | P1-A04 | keyDemo3.cpp 加 `static constexpr` 给 `kVyawMax` / `kAlignLimit` / `kAlignTol`(类比 `kClimbVxMax`,统一风格) | `keyDemo3.cpp` | [ ] | — |

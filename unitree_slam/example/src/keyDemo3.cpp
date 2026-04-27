@@ -566,7 +566,7 @@ void unitree::robot::slam::TestClient::climbStairsFun()
     // align_limit radians in this one shot; any residual error is handled
     // by the CTE main loop. The reference direction *stays* stair_yaw_body.
     float real_err = wrapPi(stair_yaw_body_local - yaw0_body);
-    float clipped_err = std::max(-align_limit, std::min(align_limit, real_err));
+    float clipped_err = std::clamp(real_err, -align_limit, align_limit);
     float align_target = wrapPi(yaw0_body + clipped_err);
     std::cout << "[climb] pre-align: real_err=" << real_err
               << " rad, clipped_err=" << clipped_err
