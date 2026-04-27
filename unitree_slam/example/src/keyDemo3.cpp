@@ -254,14 +254,41 @@ namespace unitree::robot::slam
 
     TestClient::~TestClient()
     {
-        if (is_climbing.load())
+        // Destructors are noexcept by default (C++11+). Anything that throws
+        // here would call std::terminate. The DDS / SportClient APIs are not
+        // exception-safe by contract, so wrap them defensively to make the
+        // shutdown path robust against an exception from any one call still
+        // letting the rest run.
+        try
         {
-            is_climbing.store(false);
-            if (climbThread.joinable())
-                climbThread.join();
-            sportClient.StopMove();
+            if (is_climbing.load())
+            {
+                is_climbing.store(false);
+                if (climbThread.joinable())
+                    climbThread.join();
+                sportClient.StopMove();
+            }
         }
-        stopNodeFun();
+        catch (const std::exception &e)
+        {
+            std::cerr << "[~TestClient] climb-shutdown threw: " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            std::cerr << "[~TestClient] climb-shutdown threw unknown" << std::endl;
+        }
+        try
+        {
+            stopNodeFun();
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "[~TestClient] stopNodeFun threw: " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            std::cerr << "[~TestClient] stopNodeFun threw unknown" << std::endl;
+        }
     }
 
     void TestClient::Init()
