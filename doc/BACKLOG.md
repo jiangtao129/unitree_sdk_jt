@@ -118,7 +118,7 @@
 | P2-D12 | `pl_relocation/xt16.yaml` 加中文注释 | `unitree_slam/config/pl_relocation/xt16.yaml` | [x] | #38 |
 | P2-D13 | `gridmap_config/config.yaml` 加中文注释 | `unitree_slam/config/gridmap_config/config.yaml` | [x] | #39 |
 | P2-D14 | `slam_interfaces_server_config/param.yaml` 加中文注释 | `unitree_slam/config/slam_interfaces_server_config/param.yaml` | [x] | #40 |
-| P2-D15 | `planner_config/{param,pose_ctrl_param}.yaml` 加中文注释(本 PR 仅 param.yaml; pose_ctrl 留下次) | `unitree_slam/config/planner_config/*.yaml` | [partial] | #41 |
+| P2-D15 | `planner_config/{param,pose_ctrl_param}.yaml` 加中文注释 | `unitree_slam/config/planner_config/*.yaml` | [x] | #41+#42 |
 
 ### E. 代码 idiom 升级(15)
 
