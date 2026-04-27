@@ -1,4 +1,5 @@
 ---
+status: completed; design landed in unitree_slam/example/src/keyDemo3.cpp (CTE main loop, pre-align, kClimbVxMax safety clamp). Subsequent refinements in PRs #6, #15-#17, #24, #25.
 name: climb cross-track error + session reset (keyDemo3)
 overview: 在 keyDemo2.cpp 基础上新建 keyDemo3.cpp。两项改动：(a) case w 成功后自动 stopNode 清掉服务端残留状态, 避免第二次 q 报超出 cube 范围; (b) 爬楼控制升级为 Cross-Track Error (CTE) 闭环 + 5 度限幅预对齐, 不依赖减速或自动到达, 只靠横向 dy 反馈把狗拉回直线, 用户按 c 手动开始/结束。先改本地, dock 同步待用户通知 (dock 代码根 /home/unitree/jiangtao/)。
 todos:
