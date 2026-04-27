@@ -69,7 +69,7 @@
 | P1-A07 | TestClient 析构防异常: C++11 析构默认 noexcept, 显式标注是 redundant; 真改进是给析构里 climbThread.join / StopMove / stopNodeFun 包 try/catch 避免单个 throw 导致 std::terminate 跳过其他 cleanup | `keyDemo3.cpp` | [x] | #32 |
 | P1-A08 | 全局 `currentKey` 实际是 dead code(被 keyExecute() 的 local 同名变量 shadow), 改 atomic 没意义 → 直接删除 dead global | `keyDemo3.cpp` | [x] | #31 |
 | P1-A09 | TeeBuf class 加 `final` 关键字(防止意外被继承) | `keyDemo3.cpp` | [x] | #26 |
-| P1-A10 | `poseList_f1` / `poseList_f2` 的 `std::vector<poseDate>` 在多线程访问时其实不安全 → 加注释说明哪个线程访问哪个 | `keyDemo3.cpp` | [ ] | — |
+| P1-A10 | `poseList_f1` / `poseList_f2` 的 `std::vector<poseDate>` 在多线程访问时其实不安全 → 加注释说明哪个线程访问哪个 | `keyDemo3.cpp` | [x] | #33 |
 | P1-A11 | log 文件路径用 `std::filesystem::path` 而不是 `char[96]`(避免 C string 溢出风险) | `keyDemo3.cpp` | [ ] | — |
 
 ### B. 测试覆盖(7)
