@@ -59,7 +59,6 @@ private:
 
 using namespace unitree::robot;
 using namespace unitree::common;
-unsigned char currentKey;
 
 // Wrap angle to [-pi, pi] in a numerically-robust way (handles any multiples of 2*pi).
 static inline float wrapPi(float a)
