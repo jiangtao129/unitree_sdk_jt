@@ -14,9 +14,9 @@
 进度条(完成的项数 / 总项数):
 - P0 (实质性): 4 / 12
 - P1 (有用): 11 / 25 (P1-A04 cancelled with reason)
-- P2 (锦上添花): 3 / 30
+- P2 (锦上添花): 4 / 30
 - P3 (可选填充): 0 / 15
-- **总计**: **18 / 82**
+- **总计**: **19 / 82**
 
 ---
 
@@ -108,7 +108,7 @@
 | P2-D02 | 加 `CONTRIBUTING.md`,说明 fork 接受新 PR 的流程 | 新文件 | [x] | #28 |
 | P2-D03 | 加 `SECURITY.md`,说明发现安全问题怎么报告 | 新文件 | [x] | #29 |
 | P2-D04 | 加 `.editorconfig`(行尾 / 缩进 / 字符集统一) | 新文件 | [x] | #27 |
-| P2-D05 | 加 `.gitattributes`(text=auto + 文件特定 lock 等) | 新文件 | [ ] | — |
+| P2-D05 | 加 `.gitattributes`(text=auto + 文件特定 lock 等) | 新文件 | [x] | #30 |
 | P2-D06 | README.md 加一节 "How this fork differs from upstream" | `README.md` | [ ] | — |
 | P2-D07 | README.md 加一节 "Pipeline" 介绍 ship.md 流程 | `README.md` | [ ] | — |
 | P2-D08 | README.md 顶部加 GitHub Actions status badge | `README.md` | [ ] | — |

@@ -1,0 +1,46 @@
+# Default: let git detect text vs binary, normalise to LF on commit, keep
+# whatever line ending the working tree wants on checkout. Combined with the
+# `end_of_line = lf` rule in .editorconfig this keeps the repo LF-only even
+# when contributors check out on Windows / macOS.
+* text=auto eol=lf
+
+# Source code, configs, scripts, docs - explicit text + LF.
+*.cpp        text eol=lf
+*.hpp        text eol=lf
+*.h          text eol=lf
+*.c          text eol=lf
+*.py         text eol=lf
+*.sh         text eol=lf
+*.md         text eol=lf
+*.yml        text eol=lf
+*.yaml       text eol=lf
+*.json       text eol=lf
+*.cmake      text eol=lf
+*.txt        text eol=lf
+CMakeLists.txt text eol=lf
+
+# Vendored Unitree binaries (aarch64 ELF / closed-source .so) and SLAM data.
+# Force binary mode so git never tries to "fix" line endings or compute
+# meaningful diffs - those bytes must round-trip byte-for-byte.
+unitree_slam/bin/mid360_driver  binary
+unitree_slam/bin/unitree_slam   binary
+unitree_slam/bin/xt16_driver    binary
+*.so                            binary
+*.a                             binary
+*.o                             binary
+*.pcd                           binary
+*.png                           binary
+*.jpg                           binary
+*.jpeg                          binary
+*.pdf                           binary
+
+# Suppress noisy diffs in PR review for files that humans never read by hand.
+unitree_slam/bin/mid360_driver  -diff
+unitree_slam/bin/unitree_slam   -diff
+unitree_slam/bin/xt16_driver    -diff
+
+# These large auto-generated docs / data should be visible in PRs but not
+# count toward GitHub's language detection (so the repo's primary language
+# stays C++ where the real code lives).
+data/demo1/*.pcd  linguist-generated=true
+*.pdf             linguist-documentation=true
