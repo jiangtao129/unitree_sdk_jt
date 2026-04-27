@@ -113,7 +113,7 @@
 | P2-D07 | README.md 加一节 "Pipeline" 介绍 ship.md 流程 | `README.md` | [ ] | — |
 | P2-D08 | README.md 顶部加 GitHub Actions status badge | `README.md` | [ ] | — |
 | P2-D09 | mid360.yaml 的中文注释翻译成英文版另存一份(双语支持) | `unitree_slam/config/pl_mapping/mid360_en.yaml` (新) | [ ] | — |
-| P2-D10 | `pl_mapping/xt16.yaml` 加中文注释(类比 mid360.yaml Go2_W 详注) | `unitree_slam/config/pl_mapping/xt16.yaml` | [ ] | — |
+| P2-D10 | `pl_mapping/xt16.yaml` 加中文注释(类比 mid360.yaml Go2_W 详注) | `unitree_slam/config/pl_mapping/xt16.yaml` | [x] | #36 |
 | P2-D11 | `pl_relocation/mid360.yaml` 加中文注释 | `unitree_slam/config/pl_relocation/mid360.yaml` | [ ] | — |
 | P2-D12 | `pl_relocation/xt16.yaml` 加中文注释 | `unitree_slam/config/pl_relocation/xt16.yaml` | [ ] | — |
 | P2-D13 | `gridmap_config/config.yaml` 加中文注释 | `unitree_slam/config/gridmap_config/config.yaml` | [ ] | — |

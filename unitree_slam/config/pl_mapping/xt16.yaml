@@ -1,6 +1,17 @@
+# =============================================================================
+# Hesai XT-16 LiDAR mapping config. Field semantics are identical to
+# pl_mapping/mid360.yaml — see that file's Go2_W section for a detailed
+# Chinese annotation of every field (含义 / 单位 / 调大调小影响). Only the
+# topic names, frame names and a few tunables (scan_resolution=0.4 instead
+# of 0.3, lidar_scan_max_range=20 instead of 30, pose_imu_lidar 不同) differ
+# because XT-16 has different physical / sampling characteristics from
+# Mid360.
+#
+# 不要 在这里重复翻译; 改了字段含义请同步 mid360.yaml 的注释.
+# =============================================================================
 G1:
-  imu_topic: "rt/dog_imu_raw"   #/livox/imu  rt/utlidar/imu_livox_mid360
-  lidar_topic: "rt/rslidar_points"
+  imu_topic: "rt/dog_imu_raw"   # IMU 话题 (Hesai XT-16 一般搭配狗自身 IMU)
+  lidar_topic: "rt/rslidar_points"   # XT-16 输出话题 (注: 字段名沿用 rslidar)
   imu_acc_multi: 1.0 #10.0
   imu_gyro_multi: 1.0
   filter_num: 4 #8
@@ -34,9 +45,10 @@ G1:
   plane_threshold: 0.1
   ground_ang: 75.0     # degree
 
+# Go2: 普通版 Go2 + 外接 XT-16 LiDAR. 字段语义见 mid360.yaml Go2_W 段详注.
 Go2:
-  imu_topic: "rt/dog_imu_raw"   #/livox/imu  rt/utlidar/imu_livox_mid360
-  lidar_topic: "rt/unitree/slam_lidar/points"
+  imu_topic: "rt/dog_imu_raw"   # IMU 话题 (狗自身 IMU)
+  lidar_topic: "rt/unitree/slam_lidar/points"   # XT-16 通过 SLAM driver 转发的话题
   imu_acc_multi: 1.0 #10.0
   imu_gyro_multi: 1.0
   filter_num: 35 #8
@@ -70,8 +82,10 @@ Go2:
   plane_threshold: 0.1
   ground_ang: 75.0     # degree
 
+# Go2_W: 轮足版 Go2 + 外接 XT-16. 跟 Go2 段几乎相同, 仅运行剖面不同 (轮足
+# 版的 IMU bias 收敛特性略有差异), 这里保持参数一致以便排错时对比.
 Go2_W:
-  imu_topic: "rt/dog_imu_raw"   #/livox/imu  rt/utlidar/imu_livox_mid360
+  imu_topic: "rt/dog_imu_raw"   # IMU 话题
   lidar_topic: "rt/unitree/slam_lidar/points"
   imu_acc_multi: 1.0 #10.0
   imu_gyro_multi: 1.0
