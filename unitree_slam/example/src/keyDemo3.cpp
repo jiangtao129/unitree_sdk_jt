@@ -690,12 +690,29 @@ void unitree::robot::slam::TestClient::saveTaskListFun()
             j["speed"] = p.speed;
             arr.push_back(j);
         }
-        // std::ofstream default mode is truncate, so any existing file is
-        // overwritten in full. That is what we want here.
-        std::ofstream f(path);
-        if (!f.is_open())
+        // Atomic write: serialize the full JSON to "<path>.tmp" first, ensure
+        // the bytes are flushed to disk, then std::filesystem::rename onto the
+        // real path. rename(2) on the same filesystem is atomic at the inode
+        // level, so a crash mid-write leaves the previous f*.json intact
+        // instead of a half-written / empty file. This protects multi-floor
+        // task lists during long demo runs from a single SIGKILL or kernel
+        // panic destroying the user's recorded waypoints.
+        const std::string tmp = path + ".tmp";
+        {
+            std::ofstream f(tmp);
+            if (!f.is_open())
+                return false;
+            f << arr.dump(2);
+            if (!f.good())
+                return false;
+        } // ofstream destructor flushes + closes before rename below
+        std::error_code ec;
+        std::filesystem::rename(tmp, path, ec);
+        if (ec)
+        {
+            std::filesystem::remove(tmp, ec);
             return false;
-        f << arr.dump(2);
+        }
         return true;
     };
 
