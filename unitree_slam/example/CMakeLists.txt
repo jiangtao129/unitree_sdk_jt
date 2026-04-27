@@ -1,5 +1,9 @@
-project(slam_example)
+# cmake_minimum_required must come BEFORE project() per CMake docs:
+# https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html
+# Some policies are evaluated as part of project(), so swapping the two
+# can silently flip behavior.
 cmake_minimum_required(VERSION 3.16)
+project(slam_example LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)

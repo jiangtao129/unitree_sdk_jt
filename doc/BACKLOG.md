@@ -164,7 +164,7 @@
 | P3-F12 | doc/agent_pipeline_onboarding_for_teammate.md 加 TOC | `doc/agent_pipeline_onboarding_for_teammate.md` | [ ] | — |
 | P3-F13 | .gitignore 注释分组重排(by category, 不是按字母序更易读) | `.gitignore` | [x] | #53 |
 | P3-F14 | example/go2/go2_robot_state_client.cpp 顶部加 "modified by jiangtao129" 注释,标记 fork 改动来源 | `example/go2/go2_robot_state_client.cpp` | [ ] | — |
-| P3-F15 | unitree_slam/example/CMakeLists.txt 加 cmake_minimum_required 显式版本要求 | `unitree_slam/example/CMakeLists.txt` | [ ] | — |
+| P3-F15 | unitree_slam/example/CMakeLists.txt cmake_minimum_required 顺序修正(原本在 project() 之后, 是 cmake 反模式) + 显式 LANGUAGES CXX | `unitree_slam/example/CMakeLists.txt` | [x] | #54 |
 
 ---
 
