@@ -3,6 +3,10 @@ project(unitree_sdk2 VERSION 2.0.0)
 
 ## Project Options
 option(BUILD_EXAMPLES "Build examples" ON)
+# Host-only unit tests for keyDemo3 stair-climb math (pure C++17, no DDS/SDK).
+# Wired into bash scripts/verify.sh; disable when consuming the SDK as a
+# subdirectory in a downstream project that doesn't want the test target.
+option(BUILD_CLIMB_TESTS "Build host-only stair-climb math unit tests" ON)
 
 ## Set compiler to use c++ 17 features
 set(CMAKE_CXX_STANDARD 17)
@@ -58,6 +62,11 @@ target_include_directories(unitree_sdk2 INTERFACE
 
 if (BUILD_EXAMPLES)
     add_subdirectory(example)
+endif ()
+
+if (BUILD_CLIMB_TESTS)
+    enable_testing()
+    add_subdirectory(unitree_slam/example/test)
 endif ()
 
 ## Install the library

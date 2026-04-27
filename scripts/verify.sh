@@ -7,8 +7,9 @@
 # bypass it by running cmake / pytest by hand in different ways.
 #
 # What it does:
-#   [1/2] cmake configure + build (x86_64 host build, Release)
-#   [2/2] Python tooling smoke (data/demo1/view_map.py --selftest)
+#   [1/3] cmake configure + build (x86_64 host build, Release)
+#   [2/3] keyDemo3 stair-climb math unit test (host-only, pure C++17)
+#   [3/3] Python tooling smoke (data/demo1/view_map.py --selftest)
 #         Skipped gracefully if numpy/open3d not installed.
 #
 # Out of scope (by design, NOT done here):
@@ -28,9 +29,9 @@ echo "================================================================"
 echo
 
 # ---------------------------------------------------------------------
-# [1/2] cmake build (x86_64 host)
+# [1/3] cmake build (x86_64 host)
 # ---------------------------------------------------------------------
-echo ">>> [1/2] cmake build (x86_64 host)"
+echo ">>> [1/3] cmake build (x86_64 host)"
 BUILD_DIR="${BUILD_DIR:-build}"
 cmake -B "$BUILD_DIR" -S . -DCMAKE_BUILD_TYPE=Release
 cmake --build "$BUILD_DIR" -j"$(nproc)"
@@ -38,9 +39,23 @@ echo "<<< cmake build OK  (artifacts in $BUILD_DIR/)"
 echo
 
 # ---------------------------------------------------------------------
-# [2/2] Python tooling smoke
+# [2/3] keyDemo3 stair-climb math unit test (host-only)
 # ---------------------------------------------------------------------
-echo ">>> [2/2] Python tooling smoke (view_map.py --selftest)"
+echo ">>> [2/3] keyDemo3 stair-climb math unit test"
+TEST_BIN="$BUILD_DIR/bin/test_climb_control"
+if [ -x "$TEST_BIN" ]; then
+    "$TEST_BIN"
+    echo "<<< stair-climb math unit test OK"
+else
+    echo "ERROR: $TEST_BIN not found - did the cmake build skip BUILD_CLIMB_TESTS?" >&2
+    exit 1
+fi
+echo
+
+# ---------------------------------------------------------------------
+# [3/3] Python tooling smoke
+# ---------------------------------------------------------------------
+echo ">>> [3/3] Python tooling smoke (view_map.py --selftest)"
 if command -v python3 >/dev/null 2>&1; then
     if [ -f data/demo1/view_map.py ]; then
         # selftest 自身处理依赖缺失: 缺 numpy/open3d 时 [skip]+exit 0;
