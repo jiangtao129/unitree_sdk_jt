@@ -1,3 +1,6 @@
+# G1: 上下文人形机器人. 字段语义同 Go2_W (详注在 Go2_W 段). 与 Go2 段相比仅
+# 话题命名空间不同 (utlidar 而非 unitree/slam_lidar) 反映 G1 本体的 LiDAR
+# 接入方式. 不熟字段含义请回 Go2_W 段查 (本文件第 50 行起).
 G1:
     imu_topic: "rt/utlidar/imu_livox_mid360"   #/livox/imu  rt/utlidar/imu_livox_mid360
     lidar_topic: "rt/utlidar/cloud_livox_mid360"
