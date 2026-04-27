@@ -1,32 +1,40 @@
-# IDE
-.vscode
+# =============================================================================
+# .gitignore — grouped, ordered top-of-tree first, then per-language, then
+# per-tool. New additions: keep this layout (group + 1-line comment, blank
+# between groups).
+# =============================================================================
 
-# cpp
+# --- Build output (CMake / cmake-tools) ---
 build
-
-#cland
 .cache
+compile_commands.json
 
-# Unitree SLAM 运行日志 (每次跑都变, 不入库)
+# --- Editors / IDEs ---
+.vscode
+*.swp
+*~
+
+# --- Backup files (a stray *.bak.* slipped through baseline; see PR #3) ---
+*.bak
+*.bak.*
+
+# --- Python ---
+__pycache__/
+*.pyc
+
+# --- Logs ---
+*.log
+
+# --- Unitree SLAM specific ---
+# Runtime logs rotate every run, no diff value.
 unitree_slam/bin/logs/
 
-# 由 unitree_slam/example/src/keyDemo*.cpp 编出来的 ELF (源码在仓库里, 别入二进制)
+# Built from unitree_slam/example/src/keyDemo*.cpp; don't ship binaries
+# (the source is in the repo, dock rebuilds locally).
 unitree_slam/bin/keyDemo
 unitree_slam/bin/keyDemo[0-9]
 unitree_slam/bin/keyDemo[0-9][0-9]
 
-# 注意: unitree_slam/bin/ 下的 mid360_driver / unitree_slam / xt16_driver 是宇树
-# 官方提供的闭源 aarch64 二进制 (无源码), 必须入库, 故不在此忽略.
-
-# Python 缓存
-__pycache__/
-*.pyc
-
-# 通用日志
-*.log
-
-# 编辑器/工具产生的备份与临时文件 (避免备份不小心被 commit, 见 baseline 清理时的 .bak 残留)
-*.bak
-*.bak.*
-*.swp
-*~
+# Note: mid360_driver / unitree_slam / xt16_driver under unitree_slam/bin/
+# are the closed-source aarch64 binaries Unitree ships (no source available).
+# They are deliberately *not* ignored — see PR #5 + SECURITY.md.
