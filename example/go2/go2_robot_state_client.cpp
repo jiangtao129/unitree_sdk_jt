@@ -1,3 +1,9 @@
+// Modified in fork jiangtao129/unitree_sdk_jt:
+//   Default network interface "eth0" -> "go2eth" so this binary "just works"
+//   on a Go2 EDU dock without -Dnetif overrides. Upstream still uses "eth0".
+//   No other change vs upstream; please port to upstream if it ever
+//   matters there (rest of file is upstream as-is).
+
 #include <unitree/robot/go2/robot_state/robot_state_client.hpp>
 #include <unitree/common/time/time_tool.hpp>
 
