@@ -66,7 +66,7 @@
 | P1-A04 | ~~keyDemo3.cpp 加 `static constexpr` 给 `kVyawMax` / `kAlignLimit` / `kAlignTol`(类比 `kClimbVxMax`,统一风格)~~ **取消**: 这些是 public *tunable*(用户运行期可调),做成 constexpr 会破坏其设计意图; `kClimbVxMax` 是 *hard cap* 才合适 constexpr | `keyDemo3.cpp` | [skip] | — |
 | P1-A05 | keyDemo3.cpp 主循环 sleep `std::chrono::milliseconds(20)` 抽常量 `kClimbLoopPeriod`(50 Hz 控制频率显式命名) | `keyDemo3.cpp` | [x] | #24 |
 | P1-A06 | climb_control.hpp **全部 7 个** free function 加 `[[nodiscard]]` 属性 | `climb_control.hpp` | [x] | #25 |
-| P1-A07 | TestClient 类的 emit-only public 成员加 `noexcept` 标注(析构 / move) | `keyDemo3.cpp` | [ ] | — |
+| P1-A07 | TestClient 析构防异常: C++11 析构默认 noexcept, 显式标注是 redundant; 真改进是给析构里 climbThread.join / StopMove / stopNodeFun 包 try/catch 避免单个 throw 导致 std::terminate 跳过其他 cleanup | `keyDemo3.cpp` | [x] | #32 |
 | P1-A08 | 全局 `currentKey` 实际是 dead code(被 keyExecute() 的 local 同名变量 shadow), 改 atomic 没意义 → 直接删除 dead global | `keyDemo3.cpp` | [x] | #31 |
 | P1-A09 | TeeBuf class 加 `final` 关键字(防止意外被继承) | `keyDemo3.cpp` | [x] | #26 |
 | P1-A10 | `poseList_f1` / `poseList_f2` 的 `std::vector<poseDate>` 在多线程访问时其实不安全 → 加注释说明哪个线程访问哪个 | `keyDemo3.cpp` | [ ] | — |
