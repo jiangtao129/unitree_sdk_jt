@@ -13,10 +13,10 @@
 
 进度条(完成的项数 / 总项数):
 - P0 (实质性): 4 / 12
-- P1 (有用): 9 / 25 (P1-A04 cancelled with reason)
+- P1 (有用): 10 / 25 (P1-A04 cancelled with reason)
 - P2 (锦上添花): 0 / 30
 - P3 (可选填充): 0 / 15
-- **总计**: **13 / 82**
+- **总计**: **14 / 82**
 
 ---
 
@@ -65,7 +65,7 @@
 | P1-A03 | keyDemo3.cpp **两处** vyaw clamp (pre-align line 590 + main loop line 627): `std::max(-vyaw_max, std::min(vyaw_max, K_psi*yerr))` → `std::clamp(K_psi*yerr, -vyaw_max, vyaw_max)` | `keyDemo3.cpp` | [x] | #17 |
 | P1-A04 | ~~keyDemo3.cpp 加 `static constexpr` 给 `kVyawMax` / `kAlignLimit` / `kAlignTol`(类比 `kClimbVxMax`,统一风格)~~ **取消**: 这些是 public *tunable*(用户运行期可调),做成 constexpr 会破坏其设计意图; `kClimbVxMax` 是 *hard cap* 才合适 constexpr | `keyDemo3.cpp` | [skip] | — |
 | P1-A05 | keyDemo3.cpp 主循环 sleep `std::chrono::milliseconds(20)` 抽常量 `kClimbLoopPeriod`(50 Hz 控制频率显式命名) | `keyDemo3.cpp` | [x] | #24 |
-| P1-A06 | climb_control.hpp 的 wrapPi / yawFromQuat 加 `[[nodiscard]]` 属性 | `climb_control.hpp` | [ ] | — |
+| P1-A06 | climb_control.hpp **全部 7 个** free function 加 `[[nodiscard]]` 属性 | `climb_control.hpp` | [x] | #25 |
 | P1-A07 | TestClient 类的 emit-only public 成员加 `noexcept` 标注(析构 / move) | `keyDemo3.cpp` | [ ] | — |
 | P1-A08 | 全局变量 `currentKey` 改成 `std::atomic<unsigned char>`(它被多线程读) | `keyDemo*.cpp` | [ ] | — |
 | P1-A09 | TeeBuf class 加 `final` 关键字(防止意外被继承) | `keyDemo3.cpp` | [ ] | — |
