@@ -621,7 +621,7 @@ void unitree::robot::slam::TestClient::climbStairsFun()
             float dy_path = -dpx * sin_s + dpy * cos_s;
 
             float raw_offset = -K_y * dy_path;
-            float offset = std::max(-max_yaw_offset, std::min(max_yaw_offset, raw_offset));
+            float offset = std::clamp(raw_offset, -max_yaw_offset, max_yaw_offset);
             float desired_yaw = wrapPi(stair_yaw_body_local + offset);
             float yerr = wrapPi(desired_yaw - yawc);
             float vyaw = std::max(-vyaw_max, std::min(vyaw_max, K_psi * yerr));
