@@ -12,11 +12,11 @@
 - **下一个**: PR #12 起,从 P0 优先级开始扫
 
 进度条(完成的项数 / 总项数):
-- P0 (实质性): 1 / 12
+- P0 (实质性): 2 / 12
 - P1 (有用): 0 / 25
 - P2 (锦上添花): 0 / 30
 - P3 (可选填充): 0 / 15
-- **总计**: **1 / 82**
+- **总计**: **2 / 82**
 
 ---
 
@@ -42,7 +42,7 @@
 | P0-03 | fix | keyDemo3.cpp termios SIGINT 异常路径没还原 → 加 atexit / signal handler 还原终端 | `keyDemo3.cpp` | [ ] | — |
 | P0-04 | fix | keyDemo3.cpp `case 'd'` 执行任务列表前没 timeout 包裹,SLAM `slam_server` 不响应时 client 永远阻塞 | `keyDemo3.cpp` | [ ] | — |
 | P0-05 | fix | view_map.py 的 stub 列表写死了 5 个名字,如果 open3d 内部又新增子模块这里就漏 → 加 fallback 通用 stub | `data/demo1/view_map.py` | [ ] | — |
-| P0-06 | fix | keyDemo3.cpp `loadFloorListFromDisk` 解析 json 没 try/catch,JSON 损坏会让程序崩 | `keyDemo3.cpp` | [ ] | — |
+| P0-06 | fix | keyDemo3.cpp DDS callback `slamInfoHandler` / `slamKeyInfoHandler` 的 `nlohmann::json::parse()` 没 try/catch,SLAM server 发损坏 JSON 时异常逃出 callback 让进程崩(原描述写的是 loadFloorListFromDisk,但实际它已经有保护了,真漏洞在这两个 handler) | `keyDemo3.cpp` | [x] | #13 |
 | P0-07 | fix | keyDemo3.cpp `saveTaskListFun` 写 json 不是原子的(直接 ofstream 覆盖),程序在写到一半崩可能丢全部数据 → 写 .tmp 再 rename | `keyDemo3.cpp` | [ ] | — |
 | P0-08 | fix | scripts/verify.sh 没真编 unitree_slam/example,改 keyDemo3.cpp 语法错 verify 不报 — **PR #9 已部分解决 climb math test,但完整 build 仍漏** | `scripts/verify.sh` + `CMakeLists.txt` | [ ] | — |
 | P0-09 | fix | climb_control.hpp 中 wrapPi 在 |angle|=π 时返回 -π 还是 +π?这是个 corner case 应该写 test 确认 | `climb_control.hpp` + `test_climb_control.cpp` | [ ] | — |

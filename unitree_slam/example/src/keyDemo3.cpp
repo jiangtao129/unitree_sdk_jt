@@ -344,7 +344,20 @@ void unitree::robot::slam::TestClient::taskThreadStop()
 void unitree::robot::slam::TestClient::slamInfoHandler(const void *message)
 {
     std_msgs::msg::dds_::String_ currentMsg = *(std_msgs::msg::dds_::String_ *)message;
-    nlohmann::json jsonData = nlohmann::json ::parse(currentMsg.data());
+    // Guard against malformed JSON from slam_server. Without this catch a
+    // parse_error would unwind out of the DDS callback thread and abort the
+    // whole process; we'd rather log + drop the bad packet.
+    nlohmann::json jsonData;
+    try
+    {
+        jsonData = nlohmann::json::parse(currentMsg.data());
+    }
+    catch (const nlohmann::json::parse_error &e)
+    {
+        std::cerr << "[slamInfoHandler] dropping malformed JSON: "
+                  << e.what() << std::endl;
+        return;
+    }
 
     if (jsonData["errorCode"] != 0)
     {
@@ -367,7 +380,18 @@ void unitree::robot::slam::TestClient::slamInfoHandler(const void *message)
 void unitree::robot::slam::TestClient::slamKeyInfoHandler(const void *message)
 {
     std_msgs::msg::dds_::String_ currentMsg = *(std_msgs::msg::dds_::String_ *)message;
-    nlohmann::json jsonData = nlohmann::json ::parse(currentMsg.data());
+    // Same protection as slamInfoHandler above; see comment there.
+    nlohmann::json jsonData;
+    try
+    {
+        jsonData = nlohmann::json::parse(currentMsg.data());
+    }
+    catch (const nlohmann::json::parse_error &e)
+    {
+        std::cerr << "[slamKeyInfoHandler] dropping malformed JSON: "
+                  << e.what() << std::endl;
+        return;
+    }
 
     if (jsonData["errorCode"] != 0)
     {
