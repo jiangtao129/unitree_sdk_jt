@@ -162,7 +162,7 @@
 | P3-F10 | doc/pipeline_test_report_20260424.md 加 "Last verified: <date>" header | `doc/pipeline_test_report_20260424.md` | [x] | #51 |
 | P3-F11 | doc/dimos_pipeline_setup_for_agent.md 加 TOC | `doc/dimos_pipeline_setup_for_agent.md` | [ ] | — |
 | P3-F12 | doc/agent_pipeline_onboarding_for_teammate.md 加 TOC | `doc/agent_pipeline_onboarding_for_teammate.md` | [ ] | — |
-| P3-F13 | .gitignore 注释分组重排,按字母序 | `.gitignore` | [ ] | — |
+| P3-F13 | .gitignore 注释分组重排(by category, 不是按字母序更易读) | `.gitignore` | [x] | #53 |
 | P3-F14 | example/go2/go2_robot_state_client.cpp 顶部加 "modified by jiangtao129" 注释,标记 fork 改动来源 | `example/go2/go2_robot_state_client.cpp` | [ ] | — |
 | P3-F15 | unitree_slam/example/CMakeLists.txt 加 cmake_minimum_required 显式版本要求 | `unitree_slam/example/CMakeLists.txt` | [ ] | — |
 
