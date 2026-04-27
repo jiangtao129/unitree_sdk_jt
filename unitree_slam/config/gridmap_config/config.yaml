@@ -1,3 +1,32 @@
+# =============================================================================
+# 2D 占据栅格地图 (gridmap) 配置. 用于"实时碰撞检测 + 速度推断的预警", 给爬楼/
+# 导航的低层提供"前方多少米内是不是有障碍"的标志位. 跟 SLAM 主图 (pl_mapping)
+# 完全独立: 这里只是把当前 LiDAR 点云投到 2D 网格上做碰撞检查, 不维护历史.
+#
+# 字段语义说明 (跟 mid360.yaml 风格一致, 详注全在这里, Go2 段同名字段完全等价):
+#   revolution            栅格分辨率 (m), 越小越精细越费 CPU
+#   wide                  栅格地图边长 (m), 以机器人为中心的方形
+#   T_Dog2lidar           狗体到 LiDAR 的 6DoF 外参 [tx, ty, tz, roll, pitch, yaw]
+#                         (m / rad). 注意比 SLAM 那边的 quaternion 格式不同.
+#   lidar_height          LiDAR 在地面以上高度 (m), 用来过滤"地面点"
+#   point_cloud_topic     输入 LiDAR 点云 DDS topic
+#   odom_topic            输入里程计 topic (用 relocation odom 让 gridmap
+#                         跟着 SLAM 重定位结果一起走, 否则只能贴 dog_odom)
+#   gridmap_topic         输出 occupancy gridmap topic (给 rviz / 上层订阅)
+#   collision_x_range     [xmin, xmax, n_cells]: 碰撞检测窗口的 x 方向, n_cells
+#                         指这个窗口在 grid 上展开成多少格. 触发会急停, 必须
+#                         略大于机器人外形.
+#   collision_y_range     同上, y 方向.
+#   warning_x_range       预警窗口, 必须比 collision 大一圈, 触发预警不急停.
+#   warning_y_range       同上.
+#   predict_num           按当前速度向前推几个时间步, 检查未来位置是否进入预
+#                         警区 (用于"还没撞但马上要撞"的提前减速)
+#   predict_time          推断的总时长 (s). predict_num × dt = predict_time.
+#   log_path              gridmap 模块自己的日志目录 (相对于 unitree_slam/bin/)
+# =============================================================================
+
+# Go2_W: 轮足版 Go2. 分辨率比 Go2 段细 (0.05 vs 0.1), 因为轮足走得更稳,
+# 算力允许时把 grid 加细让碰撞检测更精确.
 Go2_W:
   grid_map:
     revolution: 0.05   # 分辨率 （m）

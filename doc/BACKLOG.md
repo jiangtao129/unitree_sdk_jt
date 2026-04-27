@@ -116,7 +116,7 @@
 | P2-D10 | `pl_mapping/xt16.yaml` 加中文注释(类比 mid360.yaml Go2_W 详注) | `unitree_slam/config/pl_mapping/xt16.yaml` | [x] | #36 |
 | P2-D11 | `pl_relocation/mid360.yaml` 加中文注释 | `unitree_slam/config/pl_relocation/mid360.yaml` | [x] | #37 |
 | P2-D12 | `pl_relocation/xt16.yaml` 加中文注释 | `unitree_slam/config/pl_relocation/xt16.yaml` | [x] | #38 |
-| P2-D13 | `gridmap_config/config.yaml` 加中文注释 | `unitree_slam/config/gridmap_config/config.yaml` | [ ] | — |
+| P2-D13 | `gridmap_config/config.yaml` 加中文注释 | `unitree_slam/config/gridmap_config/config.yaml` | [x] | #39 |
 | P2-D14 | `slam_interfaces_server_config/param.yaml` 加中文注释 | `unitree_slam/config/slam_interfaces_server_config/param.yaml` | [ ] | — |
 | P2-D15 | `planner_config/{param,pose_ctrl_param}.yaml` 加中文注释 | `unitree_slam/config/planner_config/*.yaml` | [ ] | — |
 
