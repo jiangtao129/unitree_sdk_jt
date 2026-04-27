@@ -32,7 +32,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    
+
+    - name: Cache cmake build dir
+      # Speeds up incremental CI: subsequent runs that don't change CMakeLists
+      # or any *.cpp under example/ / unitree_slam/example/ reuse the previous
+      # build/ tree instead of doing a full configure + compile from scratch.
+      uses: actions/cache@v4
+      with:
+        path: build
+        key: cmake-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**', 'unitree_slam/example/src/**', 'example/**/*.cpp', 'example/**/*.hpp') }}
+        restore-keys: |
+          cmake-build-${{ runner.os }}-
+
     - name: Install dependencies
       run: |
         export DEBIAN_FRONTEND=noninteractive

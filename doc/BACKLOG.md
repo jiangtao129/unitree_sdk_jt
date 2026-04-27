@@ -89,7 +89,7 @@
 | # | 描述 | 文件 | 状态 | PR |
 |---|---|---|---|---|
 | P1-C01 | actions/checkout@v4 → @v5(消除 Node 20 deprecation 警告) | `.github/workflows/c-cpp.yml` | [x] | #18 |
-| P1-C02 | CI 加 `actions/cache@v4` 缓存 cmake build 产物(下次 PR 提速) | `.github/workflows/c-cpp.yml` | [ ] | — |
+| P1-C02 | CI 加 `actions/cache@v4` 缓存 cmake build 产物(下次 PR 提速) | `.github/workflows/c-cpp.yml` | [x] | #34 |
 | P1-C03 | CI 加 `timeout-minutes: 15`(防止僵死 job 永远占资源) | `.github/workflows/c-cpp.yml` | [x] | #19 |
 | P1-C04 | CI 加 `concurrency` group(同一 PR 重复 push 取消旧 run) | `.github/workflows/c-cpp.yml` | [x] | #20 |
 | P1-C05 | CI 加 `permissions: contents: read`(最小权限原则) | `.github/workflows/c-cpp.yml` | [x] | #21 |
