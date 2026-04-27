@@ -1,3 +1,17 @@
+# =============================================================================
+# 路径规划器 (planner) 参数. SLAM 给出全局路径后, planner 把它离散化成 PID
+# 巡迹用的样点序列, 并按"前向追踪点 + 容忍阈值"的策略发命令. 与 pose_ctrl_param.yaml
+# 配套: 这里管"规划层", pose_ctrl 管"控制层". 字段速查:
+#   CurvatureSamplingInterval        曲率采样间隔 (m), 越小越精细但 CPU 多
+#   Planner/pub_rate                 planner 节点发布命令的频率 (Hz)
+#   Planner/forwardDis               前向追踪点距当前位置的最远距离 (m)
+#                                    越大越平滑但容易"提前转弯" cut corner
+#   Planner/transform_tolerance      到达目标附近多近算"已到", 小于这个就停
+#   accurateThresholdRotate_*        在 rotate 阶段允许的位姿误差 (m / rad)
+#   accurateThresholdAdjust_*        在 adjust 阶段允许的位姿误差
+#   accurateThresholdKeeping_*       在 keeping 阶段允许的位姿误差
+# 三段 threshold 越小越精确但越花时间, 跑硬件回归时按需调整.
+# =============================================================================
 
   CurvatureSamplingInterval: 0.2                               # 曲率离散点采样间隔   pid 巡迹使用
 
