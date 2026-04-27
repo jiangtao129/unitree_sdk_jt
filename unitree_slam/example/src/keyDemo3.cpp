@@ -135,6 +135,13 @@ namespace unitree::robot::slam
         poseDate curPose;
 
         // Per-floor task lists (inherits from keyDemo2 Phase 2).
+        // Threading model: only the main keyExecute() loop reads/writes
+        // these vectors (case 's' / 'S' / 'd' / 'f'). climbThread does NOT
+        // touch them. slamInfoHandler / slamKeyInfoHandler (DDS callbacks)
+        // do not touch them either. Therefore no mutex is required, but if
+        // a future PR makes either climbThread or a DDS handler read these,
+        // it MUST add either an std::mutex or migrate to a thread-safe
+        // container.
         std::vector<poseDate> poseList_f1;
         std::vector<poseDate> poseList_f2;
 
