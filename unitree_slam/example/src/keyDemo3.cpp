@@ -24,7 +24,10 @@
 // TeeBuf duplicates every byte written to std::cout into a second streambuf
 // (typically a log file's). We install it in main() so that everything the
 // terminal shows is also persisted to keyDemo3_YYYYMMDD_HHMMSS.log in cwd.
-class TeeBuf : public std::streambuf
+// Marked final: this class is a leaf, no part of the codebase needs to extend
+// it; making it final lets the compiler devirtualize sync() / overflow()
+// calls and prevents accidental subclassing that could break the contract.
+class TeeBuf final : public std::streambuf
 {
 public:
     TeeBuf(std::streambuf *a, std::streambuf *b) : a_(a), b_(b) {}
