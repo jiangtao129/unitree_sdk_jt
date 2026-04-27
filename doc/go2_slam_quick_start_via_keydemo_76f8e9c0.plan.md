@@ -1,4 +1,5 @@
 ---
+status: completed; quick-start path verified end-to-end. Day-to-day operation should follow doc/演示文档说明/keyDemo3_operation_manual.{md,pdf} which is kept up to date.
 name: Go2 SLAM quick start via keyDemo
 overview: 在 Go2 扩展坞 PC（192.168.123.18）上用宇树预置的 unitree_slam + mid360_driver + keyDemo 快速跑通 SLAM 建图/重定位/导航，本机通过 RViz2 观察效果；当前 unitree_sdk2 仓库此步骤不需要改动。
 todos:
