@@ -67,3 +67,39 @@ Note that if you install the library to other places other than `/opt/unitree_ro
 
 ### Notice
 For more reference information, please go to [Unitree Document Center](https://support.unitree.com/home/zh/developer).
+
+---
+
+## Fork-specific: Agent-driven dev pipeline
+
+This fork (`jiangtao129/unitree_sdk_jt`) ships a one-command verify
+script + a Cursor `/ship` slash command + GitHub Actions CI + Codex
+auto-review. End-to-end:
+
+1. Open Cursor in this repo, type `/ship <one-line need>`.
+2. The local Cursor agent creates a `feature/...` branch, edits files,
+   runs `bash scripts/verify.sh` (cmake build + climb-math unit test +
+   `view_map.py --selftest`).
+3. On success it pushes, opens a PR via the GitHub REST API, and
+   enables auto-merge with `--squash --delete-branch`.
+4. GitHub Actions CI runs the same `bash scripts/verify.sh`. ChatGPT
+   Codex Connector posts a `+1` reaction (or written review) within
+   ~1 minute.
+5. Once required check `build` is green, GitHub auto-squash-merges
+   and deletes the head branch. Local main fast-forwards.
+
+Single source of truth: `bash scripts/verify.sh`. Nobody bypasses it,
+not even the maintainer (branch protection enforces it).
+
+Detailed reading order:
+- `AGENTS.md`             – hard rules + Codex review guidelines
+- `.cursor/commands/ship.md` – the 11-step `/ship` workflow
+- `.cursor/rules/00-workflow.mdc` – Cursor `alwaysApply` constraints
+- `scripts/verify.sh`     – the one verify entry point
+- `doc/BACKLOG.md`        – current open improvement items
+- `CONTRIBUTING.md`       – PR template + commit style
+- `SECURITY.md`           – how to report vulnerabilities privately
+- `doc/pipeline_test_report_20260424.md` – initial end-to-end test log
+
+Onboarding a colleague to set up the same pipeline on their own repo:
+- `doc/agent_pipeline_onboarding_for_teammate.md` – zero-assumption guide
