@@ -19,6 +19,23 @@
 # =============================================================================
 set -euo pipefail
 
+# Print a clear summary on every exit path. With set -e enabled, an early
+# failure normally surfaces as a generic non-zero exit and a wall of cmake
+# stderr; the trap makes sure both success and failure end with one obvious
+# line stating what happened, so CI logs and humans can scan it instantly.
+_verify_summary() {
+    local code=$?
+    if [ "$code" -eq 0 ]; then
+        :  # success path prints its own banner below
+    else
+        echo
+        echo "================================================================"
+        echo " verify.sh: FAILED (exit $code)"
+        echo "================================================================"
+    fi
+}
+trap _verify_summary EXIT
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
