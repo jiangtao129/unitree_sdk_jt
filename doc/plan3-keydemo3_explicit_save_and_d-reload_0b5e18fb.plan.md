@@ -1,4 +1,5 @@
 ---
+status: completed; explicit S/d/dirty-flag semantics + tee-to-logfile shipped in keyDemo3.cpp.
 name: keyDemo3 explicit save and d-reload
 overview: "按你要求给 keyDemo3.cpp 三处改动: S 保存成功后打印每个 json 的绝对路径; 按 d 前先 reload 对应楼层且检查 dirty 标志, 未保存就拒绝执行; 顺带把终端 cout 同步 tee 到带时间戳的 log 文件。保留启动自动加载。"
 todos:
