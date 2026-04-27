@@ -1,6 +1,12 @@
+# =============================================================================
+# Hesai XT-16 LiDAR re-localization (重定位) config. 字段语义参见同目录下
+# pl_relocation/mid360.yaml 顶部说明 (尤其 icp_score / speed_max / det_range
+# 这几个 relocation-only 字段). XT-16 跟 Mid360 的差异主要是话题名 / frame
+# 名 / 几个 resolution 数值, 跟 mapping 那边的 mid360 vs xt16 差异同源.
+# =============================================================================
 G1:
-  imu_topic: "rt/dog_imu_raw"   #/livox/imu 
-  lidar_topic: "rt/rslidar_points"
+  imu_topic: "rt/dog_imu_raw"   # IMU 话题 (狗自身 IMU)
+  lidar_topic: "rt/rslidar_points"   # XT-16 输出话题
   map_frame: "map"
   body_frame: "rslidar"
   pub_point_topic: "rt/unitree/slam_relocation/points"
