@@ -159,7 +159,7 @@
 | P3-F07 | view_map.py 顶部 docstring 补 license | `view_map.py` | [ ] | — |
 | P3-F08 | scripts/verify.sh 顶部加 shellcheck 兼容 directive | `scripts/verify.sh` | [ ] | — |
 | P3-F09 | AGENTS.md 加目录(Table of Contents) | `AGENTS.md` | [ ] | — |
-| P3-F10 | doc/pipeline_test_report_20260424.md 加 "Last verified: <date>" header | `doc/pipeline_test_report_20260424.md` | [ ] | — |
+| P3-F10 | doc/pipeline_test_report_20260424.md 加 "Last verified: <date>" header | `doc/pipeline_test_report_20260424.md` | [x] | #51 |
 | P3-F11 | doc/dimos_pipeline_setup_for_agent.md 加 TOC | `doc/dimos_pipeline_setup_for_agent.md` | [ ] | — |
 | P3-F12 | doc/agent_pipeline_onboarding_for_teammate.md 加 TOC | `doc/agent_pipeline_onboarding_for_teammate.md` | [ ] | — |
 | P3-F13 | .gitignore 注释分组重排,按字母序 | `.gitignore` | [ ] | — |
