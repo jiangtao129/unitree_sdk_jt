@@ -157,7 +157,7 @@
 | P3-F05 | dimos_huazhijian_multi_agent_setup_guide_zh.md 移到 `doc/archive/`(归档原始模板) | `doc/dimos_huazhijian_multi_agent_setup_guide_zh.md` | [ ] | — |
 | P3-F06 | mid360.yaml G1 段也加一条注释指向 Go2_W 段 | `unitree_slam/config/pl_mapping/mid360.yaml` | [x] | #50 |
 | P3-F07 | view_map.py 顶部 docstring 补 license | `view_map.py` | [ ] | — |
-| P3-F08 | scripts/verify.sh 顶部加 shellcheck 兼容 directive | `scripts/verify.sh` | [ ] | — |
+| P3-F08 | scripts/verify.sh 顶部加 shellcheck 兼容 directive | `scripts/verify.sh` | [x] | #52 |
 | P3-F09 | AGENTS.md 加目录(Table of Contents) | `AGENTS.md` | [ ] | — |
 | P3-F10 | doc/pipeline_test_report_20260424.md 加 "Last verified: <date>" header | `doc/pipeline_test_report_20260424.md` | [x] | #51 |
 | P3-F11 | doc/dimos_pipeline_setup_for_agent.md 加 TOC | `doc/dimos_pipeline_setup_for_agent.md` | [ ] | — |
