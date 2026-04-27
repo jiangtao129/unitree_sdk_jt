@@ -587,7 +587,7 @@ void unitree::robot::slam::TestClient::climbStairsFun()
                       << " rad; entering main loop anyway." << std::endl;
             break;
         }
-        float vyaw = std::max(-vyaw_max, std::min(vyaw_max, K_psi * yerr));
+        float vyaw = std::clamp(K_psi * yerr, -vyaw_max, vyaw_max);
         sportClient.Move(0.0f, 0.0f, vyaw);
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
@@ -624,7 +624,7 @@ void unitree::robot::slam::TestClient::climbStairsFun()
             float offset = std::clamp(raw_offset, -max_yaw_offset, max_yaw_offset);
             float desired_yaw = wrapPi(stair_yaw_body_local + offset);
             float yerr = wrapPi(desired_yaw - yawc);
-            float vyaw = std::max(-vyaw_max, std::min(vyaw_max, K_psi * yerr));
+            float vyaw = std::clamp(K_psi * yerr, -vyaw_max, vyaw_max);
 
             // Safety clamp on forward velocity before issuing the motion command.
             // climb_vx is a public tunable; without this clamp a typo could push
