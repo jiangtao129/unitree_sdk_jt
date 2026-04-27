@@ -13,10 +13,10 @@
 
 进度条(完成的项数 / 总项数):
 - P0 (实质性): 3 / 12
-- P1 (有用): 7 / 25
+- P1 (有用): 8 / 25
 - P2 (锦上添花): 0 / 30
 - P3 (可选填充): 0 / 15
-- **总计**: **10 / 82**
+- **总计**: **11 / 82**
 
 ---
 
@@ -93,7 +93,7 @@
 | P1-C03 | CI 加 `timeout-minutes: 15`(防止僵死 job 永远占资源) | `.github/workflows/c-cpp.yml` | [x] | #19 |
 | P1-C04 | CI 加 `concurrency` group(同一 PR 重复 push 取消旧 run) | `.github/workflows/c-cpp.yml` | [x] | #20 |
 | P1-C05 | CI 加 `permissions: contents: read`(最小权限原则) | `.github/workflows/c-cpp.yml` | [x] | #21 |
-| P1-C06 | CI 加打印 build info 步骤(uname / cmake --version / gcc --version) | `.github/workflows/c-cpp.yml` | [ ] | — |
+| P1-C06 | CI 加打印 build info 步骤(uname / cmake --version / gcc --version) | `.github/workflows/c-cpp.yml` | [x] | #22 |
 | P1-C07 | scripts/verify.sh 加 `--quiet` flag(CI 用静默模式),`--clean` flag(忽略 build cache 强制重编) | `scripts/verify.sh` | [ ] | — |
 
 ---
