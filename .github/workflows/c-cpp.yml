@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest  # Use latest runner to host the container
+    timeout-minutes: 15     # Hard cap so a stuck apt mirror or hung cmake
+                            # doesn't pin the runner forever (default is 360).
 
     container:
       image: ubuntu:20.04
