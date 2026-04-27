@@ -111,7 +111,7 @@
 | P2-D05 | 加 `.gitattributes`(text=auto + 文件特定 lock 等) | 新文件 | [x] | #30 |
 | P2-D06 | README.md 加一节 "How this fork differs from upstream" | `README.md` | [ ] | — |
 | P2-D07 | README.md 加一节 "Pipeline" 介绍 ship.md 流程 | `README.md` | [ ] | — |
-| P2-D08 | README.md 顶部加 GitHub Actions status badge | `README.md` | [ ] | — |
+| P2-D08 | README.md 顶部加 GitHub Actions status badge + fork 说明 (合并 D06 的部分内容) | `README.md` | [x] | #44 |
 | P2-D09 | mid360.yaml 的中文注释翻译成英文版另存一份(双语支持) | `unitree_slam/config/pl_mapping/mid360_en.yaml` (新) | [ ] | — |
 | P2-D10 | `pl_mapping/xt16.yaml` 加中文注释(类比 mid360.yaml Go2_W 详注) | `unitree_slam/config/pl_mapping/xt16.yaml` | [x] | #36 |
 | P2-D11 | `pl_relocation/mid360.yaml` 加中文注释 | `unitree_slam/config/pl_relocation/mid360.yaml` | [x] | #37 |

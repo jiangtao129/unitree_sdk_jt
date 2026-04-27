@@ -1,5 +1,14 @@
 # unitree_sdk2
+
+[![CI](https://github.com/jiangtao129/unitree_sdk_jt/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/jiangtao129/unitree_sdk_jt/actions/workflows/c-cpp.yml)
+
 Unitree robot sdk version 2.
+
+> This is a personal fork (`jiangtao129/unitree_sdk_jt`) of the upstream
+> [unitreerobotics/unitree_sdk2](https://github.com/unitreerobotics/unitree_sdk2)
+> with on-top work for Go2 EDU stair-climbing (`unitree_slam/example/src/keyDemo3.cpp`)
+> and an agent-driven CI/PR pipeline. See `AGENTS.md` and `CONTRIBUTING.md`
+> for fork-specific rules; everything else below is upstream.
 
 ### Prebuild environment
 * OS  (Ubuntu 20.04 LTS)  
