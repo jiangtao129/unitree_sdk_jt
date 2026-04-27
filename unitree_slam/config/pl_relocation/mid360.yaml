@@ -1,6 +1,19 @@
+# =============================================================================
+# Mid360 LiDAR re-localization (重定位) config. Most fields share semantics with
+# pl_mapping/mid360.yaml — see Go2_W there for detailed Chinese annotation. The
+# only relocation-specific fields are:
+#   - pub_global_pcd_topic / pub_local_pcd_topic: 重定位时把全局 PCD 和当前
+#     局部子图各发一份, 给可视化 (rviz2) 用
+#   - icp_score:           ICP 拟合通过阈值; 越小越严, 越大越宽容 (易 mismatch)
+#   - speed_max:           重定位过程允许的最大平动速度 (m/s); 超过则停下来
+#                          等点云稳定下来再算 ICP, 避免速度大导致 ICP 跑飞
+#   - det_range:           重定位时仅看 LiDAR 周围 ±det_range 米的点 (默认 10m,
+#                          比 mapping 的 60m 小很多 — 重定位只需要近距离特征
+#                          来对齐, 远端噪点反而 hurt)
+# =============================================================================
 G1:
-  imu_topic: "rt/utlidar/imu_livox_mid360"   #/livox/imu 
-  lidar_topic: "rt/utlidar/cloud_livox_mid360"
+  imu_topic: "rt/utlidar/imu_livox_mid360"   # IMU 话题
+  lidar_topic: "rt/utlidar/cloud_livox_mid360"   # LiDAR 话题
   map_frame: "map"
   body_frame: "livox_frame"
   pub_point_topic: "rt/unitree/slam_relocation/points"
