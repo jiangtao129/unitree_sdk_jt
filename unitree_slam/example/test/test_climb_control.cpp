@@ -80,6 +80,24 @@ void test_wrapPi() {
     requireBool(nearEq(std::fabs(w), static_cast<float>(M_PI), 1e-5f),
                 "wrapPi(pi) maps to +-pi");
 
+    // Tiny non-zero angles (numerical noise after long integration). These
+    // should round-trip without being snapped to 0 by spurious clamping.
+    requireNear(wrapPi( 1e-7f),  1e-7f, "wrapPi(+1e-7)");
+    requireNear(wrapPi(-1e-7f), -1e-7f, "wrapPi(-1e-7)");
+
+    // Many-turn multiples (a robot rotating in place for a while). 10 turns
+    // is enough to exercise the modulo behavior without accumulating
+    // float-precision noise above kEps; >100 turns hits ULP at ~1e-5 which
+    // is below any control-loop relevance but above this test's eps.
+    requireNear(wrapPi(10.0f * twoPi),         0.0f, "wrapPi(10 turns) -> 0");
+    requireNear(wrapPi(10.0f * twoPi + 0.5f),  0.5f, "wrapPi(10 turns + 0.5) -> 0.5");
+
+    // Idempotence: wrapPi is a projection, applying it twice is the same
+    // as once. Without this property a feedback loop can oscillate.
+    for (float a : {0.0f, 0.1f, 1.5f, 3.14f, -3.14f, 7.5f, -50.0f}) {
+        requireNear(wrapPi(wrapPi(a)), wrapPi(a), "wrapPi idempotent");
+    }
+
     std::printf("[ok] test_wrapPi\n");
 }
 
