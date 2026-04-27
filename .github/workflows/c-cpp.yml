@@ -13,6 +13,13 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege: this workflow only reads the repo (checkout) and runs
+# build/test commands. It does NOT push, comment, or touch issues/PRs.
+# Lock down the GITHUB_TOKEN to read-only contents so a hypothetical
+# compromised action in the dependency graph cannot mutate the repo.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest  # Use latest runner to host the container
