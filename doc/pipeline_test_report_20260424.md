@@ -1,9 +1,15 @@
 # Agent-Driven Dev Pipeline — 端到端测试报告
 
-- **日期**: 2026-04-24
+> **状态**: 历史快照, 反映 2026-04-24 当时配置. 流水线机制本身没有变,
+> 之后的 PR (#11 起) 沿用同一套. 数字 (PR 编号 / commit SHA / Codex react
+> 时延) 仅指当时. 想看最新进度: `git log main --oneline | head -30` 或
+> `doc/BACKLOG.md` 顶部进度条.
+
+- **首次验证日期**: 2026-04-24
+- **报告最后更新**: 2026-04-27
 - **仓库**: `git@github.com:jiangtao129/unitree_sdk_jt.git`
 - **本地路径**: `/home/jiangtao/huazhijian/project/old_go2/unitree_sdk2/`
-- **当前 main HEAD**: `46ca98b`
+- **当时 main HEAD**: `46ca98b` (PR #3 squash commit)
 - **结论**: ✅ **流水线完整跑通**;branch protection 生效;Codex 自动 review 集成生效
 
 ---
