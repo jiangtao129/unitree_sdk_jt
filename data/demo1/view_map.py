@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) jiangtao129. Licensed under the same terms as the rest of
+# the unitree_sdk_jt fork (see LICENSE at repository root). This script is
+# fork-side tooling, not upstream Unitree code.
 """
 查看 Unitree SLAM 生成的 PCD 地图，并叠加同目录下 f*.json 任务列表里的航点。
 
