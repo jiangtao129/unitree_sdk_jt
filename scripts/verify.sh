@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
 # =============================================================================
 # Unique verification entry point for the unitree_sdk_jt repo.
 #
