@@ -1,4 +1,5 @@
 ---
+status: completed; superseded by keyDemo3 (see plan3-keydemo3_explicit_save_and_d-reload.plan.md and unitree_slam/example/src/keyDemo3.cpp)
 name: go2 edu climb stairs via keydemo
 overview: 基于 `keyDemo.cpp` 新建 `keyDemo2.cpp`（不动原代码），让 Go2 EDU 能完成"楼下导航 → 盲走爬楼 → 切楼上地图重定位 → 楼上导航"的完整演示，分两阶段交付：Phase 1 只验证爬楼，Phase 2 做分层 task list 的完整流程。
 todos:
