@@ -76,7 +76,7 @@
 
 | # | 描述 | 文件 | 状态 | PR |
 |---|---|---|---|---|
-| P1-B01 | climb_control test: wrapPi 在 ±π / ±2π / ±1e-9 边界 | `test_climb_control.cpp` | [ ] | — |
+| P1-B01 | climb_control test: wrapPi 在 ±π / ±2π / ±1e-9 边界 + 多圈 + idempotence | `test_climb_control.cpp` | [x] | #43 |
 | P1-B02 | climb_control test: yawFromQuat 单位四元数 / 90° / -90° / 180° | `test_climb_control.cpp` | [ ] | — |
 | P1-B03 | climb_control test: cross-track 在 stair_yaw=0 / π/4 / π/2 三个角度 | `test_climb_control.cpp` | [ ] | — |
 | P1-B04 | climb_control test: K_y=0 退化(纯 P 控制器无 cross-track) | `test_climb_control.cpp` | [ ] | — |
