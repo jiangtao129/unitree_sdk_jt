@@ -1,0 +1,40 @@
+# EditorConfig: keep editor formatting consistent across editors / OS.
+# Docs: https://editorconfig.org
+#
+# This repo's existing tabs/spaces conventions per file type are below.
+# Most modern editors (Cursor, VSCode, JetBrains, Vim plugin) read this
+# file automatically; nothing else to install.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Python: PEP 8 wants 4-space indent (already default), but we make it explicit.
+[*.py]
+indent_size = 4
+
+# Markdown: trailing-whitespace is significant (two spaces = <br>); don't trim.
+[*.md]
+trim_trailing_whitespace = false
+
+# YAML / GitHub Actions workflows: 2-space indent is the de-facto standard.
+[*.{yml,yaml}]
+indent_size = 2
+
+# JSON / package manifests / lockfiles: 2-space, no trailing whitespace.
+[*.json]
+indent_size = 2
+
+# Shell scripts: 4-space (matches scripts/verify.sh).
+[*.sh]
+indent_size = 4
+
+# Makefiles need real tabs.
+[Makefile]
+indent_style = tab
