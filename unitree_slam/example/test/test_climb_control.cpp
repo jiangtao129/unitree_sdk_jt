@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
 
 namespace {
 
@@ -355,7 +356,153 @@ void test_preAlignClippedErr() {
 }
 
 // ---------------------------------------------------------------------------
-// 9. Integration: a single CTE step end-to-end
+// 9. selectFloorTaskList
+//
+// Locks down the per-floor list selection rule that PR #58 fixed. Before
+// PR #58, climbStairsFun() always read poseList_f1.back() regardless of the
+// currently loaded floor, so on floor 2 the climber pulled a stair_yaw that
+// was expressed in floor 1's SLAM frame and the dog turned instead of going
+// straight. This test makes the rule "only floor 1 -> f1, only floor 2 -> f2,
+// anything else -> nullptr" explicit so a future refactor can't silently
+// regress to the buggy hardcoded path.
+//
+// We use a stand-in Pose type (just a tagged float) so the test does NOT
+// depend on `keyDemo3.cpp::poseDate`. The helper is templated, so the
+// production code passing `std::vector<poseDate>` shares the same code path
+// as this test passing `std::vector<TestPose>`.
+// ---------------------------------------------------------------------------
+struct TestPose {
+    float yaw;
+};
+
+void test_selectFloorTaskList() {
+    using unitree::slam::climb::selectFloorTaskList;
+    using PoseList = std::vector<TestPose>;
+
+    PoseList f1 = {{0.10f}};         // floor 1 stair-entry yaw
+    PoseList f2 = {{1.57f}, {0.79f}}; // floor 2 task list, last point at ~45 deg
+    PoseList empty1, empty2;
+
+    // currentFloor == 1: must point at f1, regardless of f2 contents.
+    {
+        const PoseList *got = selectFloorTaskList(1, f1, f2);
+        requireBool(got == &f1, "selectFloorTaskList(1) -> &f1");
+        requireBool(got != nullptr && !got->empty(),
+                    "selectFloorTaskList(1) returns non-empty f1 here");
+    }
+    // currentFloor == 2: must point at f2, NOT f1.
+    {
+        const PoseList *got = selectFloorTaskList(2, f1, f2);
+        requireBool(got == &f2, "selectFloorTaskList(2) -> &f2");
+        requireBool(got != nullptr && got->size() == 2,
+                    "selectFloorTaskList(2) returns f2 with 2 entries");
+    }
+    // currentFloor == 0: nullptr (no map loaded). The keyDemo3 caller logs
+    // a warning and falls back to curPose. We only verify the contract here.
+    requireBool(selectFloorTaskList(0, f1, f2) == nullptr,
+                "selectFloorTaskList(0) -> nullptr (no map)");
+
+    // Defensive: any unsupported floor index also returns nullptr. If
+    // someone wires up a third floor in the future, they MUST extend this
+    // helper (and update this test) instead of letting an out-of-range
+    // value silently fall through to one of the two lists.
+    requireBool(selectFloorTaskList(3, f1, f2) == nullptr,
+                "selectFloorTaskList(3) -> nullptr (out of range)");
+    requireBool(selectFloorTaskList(-1, f1, f2) == nullptr,
+                "selectFloorTaskList(-1) -> nullptr (out of range)");
+    requireBool(selectFloorTaskList(99, f1, f2) == nullptr,
+                "selectFloorTaskList(99) -> nullptr (out of range)");
+
+    // Empty lists are fine: the helper does NOT inspect emptiness, the
+    // caller is responsible for the `!list->empty()` check before
+    // dereferencing .back(). This mirrors what keyDemo3.cpp::climbStairsFun
+    // does today (the curPose fallback fires when active_list is null OR
+    // active_list->empty()).
+    requireBool(selectFloorTaskList(1, empty1, empty2) == &empty1,
+                "selectFloorTaskList(1) returns &f1 even when empty");
+    requireBool(selectFloorTaskList(2, empty1, empty2) == &empty2,
+                "selectFloorTaskList(2) returns &f2 even when empty");
+
+    std::printf("[ok] test_selectFloorTaskList\n");
+}
+
+// ---------------------------------------------------------------------------
+// 10. Regression: PR #58 bug scenario
+//
+// Re-creates the floor-2 ascent failure end-to-end:
+//   * floor 1 stair-entry yaw was 0.0 rad (stairs run along body +x).
+//   * floor 2 stair-entry yaw is +pi/2 rad (stairs run along body +y).
+//   * Dog is on floor 2 and presses 'c'. The climber must seed
+//     stair_yaw_body with +pi/2, NOT 0.0. With the buggy code it picked
+//     poseList_f1 -> 0.0 -> pre-align rotates the dog by ~ -pi/2 to "face
+//     stairs" -> the dog turned away from the actual floor-2 stairs.
+//   * After the fix, the climber picks poseList_f2 -> +pi/2 -> CTE control
+//     starts from the correct heading.
+// ---------------------------------------------------------------------------
+void test_pr58_floor2_regression() {
+    using unitree::slam::climb::selectFloorTaskList;
+    using unitree::slam::climb::yawError;
+    using unitree::slam::climb::preAlignClippedErr;
+
+    struct WaypointYaw { float yaw; };
+    using PoseList = std::vector<WaypointYaw>;
+
+    PoseList poseList_f1 = {{0.0f}};                              // floor 1: stairs along +x
+    PoseList poseList_f2 = {{static_cast<float>(M_PI) * 0.5f}};   // floor 2: stairs along +y
+
+    // Dog is currently aligned with floor-2 stairs (yaw = +pi/2, since
+    // post-relocation body_yaw was set up to face the stairs). With the
+    // OLD buggy code, climbStairsFun() seeded stair_yaw_slam = 0 from
+    // poseList_f1 -> stair_yaw_body = 0 -> pre-align would compute
+    // real_err = wrapPi(0 - pi/2) = -pi/2 and clip to -align_limit,
+    // turning the dog ~5 deg in the wrong direction. With the FIX, the
+    // helper picks poseList_f2 -> stair_yaw = +pi/2 -> real_err = 0 ->
+    // no pre-align rotation, dog goes straight up the stairs.
+
+    const float align_limit = 0.0873f;
+    const float body_yaw_t0 = static_cast<float>(M_PI) * 0.5f;
+
+    // Floor 2 path (the fix):
+    {
+        const auto *active = selectFloorTaskList(2, poseList_f1, poseList_f2);
+        requireBool(active == &poseList_f2,
+                    "regression: floor=2 picks poseList_f2");
+        requireBool(active != nullptr && !active->empty(),
+                    "regression: floor=2 list is non-empty");
+        float stair_yaw = active->back().yaw;
+        float real_err = yawError(stair_yaw, body_yaw_t0);
+        float clipped = preAlignClippedErr(real_err, align_limit);
+        requireNear(stair_yaw, static_cast<float>(M_PI) * 0.5f,
+                    "regression: floor=2 stair_yaw is +pi/2");
+        requireNear(real_err, 0.0f, "regression: floor=2 pre-align err is 0");
+        requireNear(clipped, 0.0f, "regression: floor=2 pre-align clipped is 0");
+    }
+    // Floor 1 path (unchanged behaviour, sanity check):
+    {
+        const auto *active = selectFloorTaskList(1, poseList_f1, poseList_f2);
+        requireBool(active == &poseList_f1,
+                    "regression: floor=1 picks poseList_f1");
+        float stair_yaw = active->back().yaw;
+        requireNear(stair_yaw, 0.0f, "regression: floor=1 stair_yaw is 0");
+    }
+    // Demonstrate what the OLD buggy code would have done if we forced
+    // floor=2 to read f1 anyway: pre-align would clip to -align_limit, i.e.
+    // the dog would turn ~5 deg to the wrong side. This is the failure
+    // mode PR #58 fixed; we keep it here as a negative example so the
+    // intent of the helper is unambiguous.
+    {
+        float buggy_stair_yaw = poseList_f1.back().yaw;          // 0
+        float real_err = yawError(buggy_stair_yaw, body_yaw_t0); // -pi/2
+        float clipped = preAlignClippedErr(real_err, align_limit);
+        requireNear(clipped, -align_limit,
+                    "regression: buggy path clips to -align_limit");
+    }
+
+    std::printf("[ok] test_pr58_floor2_regression\n");
+}
+
+// ---------------------------------------------------------------------------
+// 11. Integration: a single CTE step end-to-end
 // ---------------------------------------------------------------------------
 void test_ctePipelineIntegration() {
     using namespace unitree::slam::climb;
@@ -422,6 +569,8 @@ int main() {
     test_clampVyaw();
     test_clampClimbVx();
     test_preAlignClippedErr();
+    test_selectFloorTaskList();
+    test_pr58_floor2_regression();
     test_ctePipelineIntegration();
 
     std::printf("=== test_climb_control: ALL OK ===\n");
