@@ -568,21 +568,42 @@ void unitree::robot::slam::TestClient::climbStairsFun()
     }
 
     // Step 2: determine stair_yaw in the SLAM frame.
-    // Priority 1: yaw from the last task-list point of floor1 (you record the
-    //             stair-entrance point as "facing the stairs").
-    // Priority 2: curPose yaw (fallback when no task list is present).
+    // Priority 1: yaw from the last task-list point of the *currently loaded*
+    //             floor (you record the stair-entrance point as "facing the
+    //             stairs"). Reading the wrong floor's list is dangerous: the
+    //             yaw is in that floor's SLAM frame, so after the body-frame
+    //             change-of-basis below it points in a random direction and
+    //             pre-align rotates the dog away from straight. (See bug:
+    //             on floor 2, climbStairsFun used poseList_f1.back() and
+    //             the dog turned instead of going forward.)
+    // Priority 2: curPose yaw (fallback when no task list is present, or when
+    //             no map is loaded yet).
+    const std::vector<poseDate> *active_list = nullptr;
+    if (currentFloor == 1)
+        active_list = &poseList_f1;
+    else if (currentFloor == 2)
+        active_list = &poseList_f2;
+
     float stair_yaw_slam;
-    if (!poseList_f1.empty())
+    if (active_list != nullptr && !active_list->empty())
     {
-        const auto &p = poseList_f1.back();
+        const auto &p = active_list->back();
         stair_yaw_slam = yawFromQuat(p.q_x, p.q_y, p.q_z, p.q_w);
-        std::cout << "[climb] stair_yaw_slam from poseList_f1.back(): "
-                  << stair_yaw_slam << " rad ("
+        std::cout << "[climb] stair_yaw_slam from poseList_f" << currentFloor
+                  << ".back(): " << stair_yaw_slam << " rad ("
                   << stair_yaw_slam * 180.0f / static_cast<float>(M_PI) << " deg)"
                   << std::endl;
     }
     else
     {
+        if (currentFloor == 0)
+        {
+            std::cout << "\033[1;33m"
+                      << "[climb] WARN: currentFloor=0 (no map loaded). "
+                      << "stair_yaw will come from curPose, which may be stale. "
+                      << "Press 'a' first if you want SLAM-anchored climb."
+                      << "\033[0m" << std::endl;
+        }
         stair_yaw_slam = yawFromQuat(curPose.q_x, curPose.q_y, curPose.q_z, curPose.q_w);
         std::cout << "[climb] (fallback) stair_yaw_slam from curPose: "
                   << stair_yaw_slam << " rad ("
