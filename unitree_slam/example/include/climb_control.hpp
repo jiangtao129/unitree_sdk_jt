@@ -121,6 +121,39 @@ struct CteProj {
     return std::max(-align_limit, std::min(align_limit, real_err));
 }
 
+// Pick the per-floor task list whose SLAM frame matches the currently loaded
+// map. Each map (floor1.pcd, floor2.pcd) has its own SLAM frame; reading the
+// "wrong floor" task list and feeding its yaw into the climb controller pins
+// stair_yaw_body to a random direction (because the body<->slam delta_yaw is
+// only constant *within* one map) and pre-align then rotates the dog away
+// from straight. PR #58 fixed exactly this bug by replacing a hardcoded
+// `poseList_f1.back()` with a currentFloor-aware lookup; this helper locks
+// that selection rule into one place so a future edit can't silently
+// regress it.
+//
+// Contract:
+//   * Templated on the list type so production code can pass
+//     `std::vector<poseDate>` (poseDate is a TestClient-internal type) and
+//     unit tests can pass any stand-in type.
+//   * Returns nullptr when:
+//       - currentFloor == 0: no map loaded yet (the keyDemo3 caller logs
+//         a warning and falls back to the live curPose).
+//       - currentFloor is anything other than 1 or 2: defensive default,
+//         keeps the helper robust against future floor counts being plumbed
+//         in without updating this switch.
+//   * Does NOT inspect emptiness. The caller decides what to do with an
+//     empty list (fall back to curPose, abort, etc.).
+template <typename PoseList>
+[[nodiscard]] inline const PoseList *selectFloorTaskList(int currentFloor,
+                                                         const PoseList &f1,
+                                                         const PoseList &f2) {
+    switch (currentFloor) {
+        case 1: return &f1;
+        case 2: return &f2;
+        default: return nullptr;
+    }
+}
+
 }  // namespace climb
 }  // namespace slam
 }  // namespace unitree

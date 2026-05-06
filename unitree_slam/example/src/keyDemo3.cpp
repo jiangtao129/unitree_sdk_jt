@@ -21,6 +21,8 @@
 #include <streambuf>
 #include <ctime>
 
+#include "climb_control.hpp"
+
 // TeeBuf duplicates every byte written to std::cout into a second streambuf
 // (typically a log file's). We install it in main() so that everything the
 // terminal shows is also persisted to keyDemo3_YYYYMMDD_HHMMSS.log in cwd.
@@ -578,11 +580,11 @@ void unitree::robot::slam::TestClient::climbStairsFun()
     //             the dog turned instead of going forward.)
     // Priority 2: curPose yaw (fallback when no task list is present, or when
     //             no map is loaded yet).
-    const std::vector<poseDate> *active_list = nullptr;
-    if (currentFloor == 1)
-        active_list = &poseList_f1;
-    else if (currentFloor == 2)
-        active_list = &poseList_f2;
+    // The "which list to read" rule is centralized in climb_control.hpp so the
+    // unit test can lock it down (see test_selectFloorTaskList).
+    const auto *active_list =
+        unitree::slam::climb::selectFloorTaskList(currentFloor,
+                                                  poseList_f1, poseList_f2);
 
     float stair_yaw_slam;
     if (active_list != nullptr && !active_list->empty())
