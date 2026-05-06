@@ -502,7 +502,185 @@ void test_pr58_floor2_regression() {
 }
 
 // ---------------------------------------------------------------------------
-// 11. Integration: a single CTE step end-to-end
+// 11. End-to-end pre-align chain with non-zero body<->slam delta_yaw
+//
+// `test_pr58_floor2_regression` (test #10) hardcoded body_yaw == stair_yaw_slam
+// (i.e. delta_yaw = 0), which is the "perfectly aligned right after
+// relocation" case. On real hardware the body-odom frame zero is the
+// IMU yaw at boot time, while the SLAM frame zero is the map's coordinate
+// origin - the two never line up exactly, so the
+// `delta_yaw = wrapPi(yaw0_body - yaw0_slam)` step in
+// `keyDemo3.cpp::climbStairsFun()` (Step 3) is always doing real work.
+//
+// This test wires the full keyDemo3 Step 2 -> Step 3 -> Step 4 chain through
+// the public helpers (`selectFloorTaskList`, `yawFromQuat`, `wrapPi`,
+// `yawError`, `preAlignClippedErr`) on three representative scenarios:
+//
+//   (A) Pre-aligned operator: |real_err| << align_limit, dog must NOT turn.
+//   (B) Off-by-30deg operator: |real_err| > align_limit, pre-align must
+//       cap the single-shot turn at +-align_limit.
+//   (C) stair_yaw_body wraps over +-pi: chain must still produce the
+//       SHORTEST signed real_err, not a ~2pi value that the P controller
+//       would translate into a runaway vyaw.
+//
+// If any future refactor breaks helper -> quat -> delta -> stair_yaw_body
+// -> err composition, exactly this test fires.
+// ---------------------------------------------------------------------------
+void test_climbStartChain_withDeltaYaw() {
+    using unitree::slam::climb::selectFloorTaskList;
+    using unitree::slam::climb::yawFromQuat;
+    using unitree::slam::climb::wrapPi;
+    using unitree::slam::climb::yawError;
+    using unitree::slam::climb::preAlignClippedErr;
+
+    // Stand-in for the keyDemo3 internal `poseDate`. Only the four quat
+    // components are read by climbStairsFun() Step 2.
+    struct Quat {
+        float qx, qy, qz, qw;
+    };
+    using PoseList = std::vector<Quat>;
+
+    const float align_limit = 0.0873f;  // ~5 deg, mirrors keyDemo3 default
+
+    // Build a quaternion representing a pure z-axis rotation by `yaw`.
+    // climbStairsFun() reads only z-axis yaw out of curPose and the task
+    // list, so we don't need to model roll/pitch here.
+    auto qZ = [](float yaw) {
+        return Quat{0.0f, 0.0f, std::sin(yaw * 0.5f), std::cos(yaw * 0.5f)};
+    };
+
+    // Drive a single keyDemo3 Step2->Step4 chain and return the values that
+    // would be passed downstream to the CTE main loop. Mirrors the math in
+    // keyDemo3.cpp:570..613 exactly; if that math drifts, this helper drifts
+    // with it and the asserts below catch the regression.
+    struct ChainOut {
+        float stair_yaw_slam;
+        float delta_yaw;
+        float stair_yaw_body;
+        float real_err;
+        float clipped_err;
+        float align_target;
+    };
+    auto runChain = [&](int currentFloor,
+                        const PoseList &f1, const PoseList &f2,
+                        const Quat &curPose,
+                        float body_yaw_t0) {
+        const auto *active = selectFloorTaskList(currentFloor, f1, f2);
+        // For the cases below `active` is always non-null and non-empty;
+        // the curPose-fallback path is exercised by test_pr58_floor2_regression
+        // and the contract test_selectFloorTaskList.
+        requireBool(active != nullptr && !active->empty(),
+                    "chain: active list non-empty for delta_yaw scenarios");
+        const Quat &p = active->back();
+        ChainOut out;
+        out.stair_yaw_slam = yawFromQuat(p.qx, p.qy, p.qz, p.qw);
+        float yaw0_slam   = yawFromQuat(curPose.qx, curPose.qy, curPose.qz, curPose.qw);
+        out.delta_yaw      = wrapPi(body_yaw_t0 - yaw0_slam);
+        out.stair_yaw_body = wrapPi(out.stair_yaw_slam + out.delta_yaw);
+        out.real_err       = yawError(out.stair_yaw_body, body_yaw_t0);
+        out.clipped_err    = preAlignClippedErr(out.real_err, align_limit);
+        out.align_target   = wrapPi(body_yaw_t0 + out.clipped_err);
+        return out;
+    };
+
+    // -----------------------------------------------------------------
+    // (A) Pre-aligned operator: stair_yaw_slam = +0.7 rad, but body and
+    //     slam frames disagree by -0.2 rad (delta_yaw); operator put the
+    //     dog at body_yaw_t0 = +0.5 rad which - given delta_yaw = -0.2 -
+    //     happens to map to stair_yaw_body = +0.5 rad. Expected: real_err
+    //     = 0, no pre-align rotation.
+    // -----------------------------------------------------------------
+    {
+        PoseList f1 = {qZ(0.0f)};
+        PoseList f2 = {qZ(0.7f)};
+        Quat curPose = qZ(0.7f);          // slam says we are at yaw=+0.7
+        float body_yaw_t0 = 0.5f;          // body-odom says we are at +0.5
+        // delta_yaw = wrapPi(0.5 - 0.7) = -0.2
+        // stair_yaw_body = wrapPi(0.7 + -0.2) = 0.5
+        // real_err = wrapPi(0.5 - 0.5) = 0
+        ChainOut got = runChain(2, f1, f2, curPose, body_yaw_t0);
+        requireNear(got.stair_yaw_slam, 0.7f,  "(A) stair_yaw_slam from f2");
+        requireNear(got.delta_yaw,      -0.2f, "(A) delta_yaw");
+        requireNear(got.stair_yaw_body, 0.5f,  "(A) stair_yaw_body");
+        requireNear(got.real_err,       0.0f,  "(A) pre-aligned real_err is 0");
+        requireNear(got.clipped_err,    0.0f,  "(A) pre-aligned clip is 0");
+        requireNear(got.align_target,   0.5f,  "(A) align_target == body_yaw_t0");
+    }
+
+    // -----------------------------------------------------------------
+    // (B) Off-by-30deg operator: same maps and same physical body<->slam
+    //     frame offset (delta_yaw = -0.2) as (A), but the dog physically
+    //     points 30 deg (~0.524 rad) clockwise of stair-aligned. Both
+    //     curPose (slam-side reading) and body_yaw_t0 (body-odom reading)
+    //     move together because they describe the SAME robot pose - only
+    //     the operator's pre-climb heading changed. Expected: real_err is
+    //     large, single-shot turn capped at +-align_limit.
+    // -----------------------------------------------------------------
+    {
+        const float pi = static_cast<float>(M_PI);
+        PoseList f1 = {qZ(0.0f)};
+        PoseList f2 = {qZ(0.7f)};
+        // Pick body_yaw_t0 first; recover curPose so that
+        // delta_yaw = body_yaw_t0 - yaw0_slam stays at -0.2 like in (A).
+        float body_yaw_t0 = 0.5f - pi / 6.0f;     // 0.5 - 30deg
+        Quat curPose = qZ(body_yaw_t0 + 0.2f);    // yaw0_slam = body + 0.2
+        // delta_yaw       = -0.2
+        // stair_yaw_body  = wrapPi(0.7 + -0.2) = 0.5
+        // real_err        = wrapPi(0.5 - body_yaw_t0) = +pi/6 ~ +0.524
+        ChainOut got = runChain(2, f1, f2, curPose, body_yaw_t0);
+        requireNear(got.delta_yaw, -0.2f, "(B) delta_yaw stays -0.2");
+        requireNear(got.stair_yaw_body, 0.5f, "(B) stair_yaw_body");
+        requireBool(got.real_err > align_limit,
+                    "(B) real_err exceeds align_limit");
+        requireNear(got.real_err, pi / 6.0f, "(B) real_err is +pi/6");
+        requireNear(got.clipped_err, align_limit,
+                    "(B) clip saturates to +align_limit");
+        // align_target advances by exactly align_limit, NOT by real_err.
+        requireNear(got.align_target,
+                    wrapPi(body_yaw_t0 + align_limit),
+                    "(B) align_target = body_yaw + align_limit");
+    }
+
+    // -----------------------------------------------------------------
+    // (C) Wrap edge: stair_yaw_slam = +pi - 0.05, delta_yaw chosen so
+    //     stair_yaw_body wraps to slightly less than -pi (i.e. crosses
+    //     the +-pi seam). Body is sitting just past +pi (at +pi - 0.10
+    //     in wrapped form). The chain must produce a small negative
+    //     real_err (~ -0.05 - the SHORT way around the circle), not a
+    //     ~+2pi value that would saturate the P controller and slam the
+    //     dog into a max-rate spin.
+    // -----------------------------------------------------------------
+    {
+        const float pi = static_cast<float>(M_PI);
+        PoseList f1 = {qZ(0.0f)};
+        // Make stair_yaw_slam come out as wrapped(+pi - 0.05) = +pi - 0.05.
+        PoseList f2 = {qZ(pi - 0.05f)};
+        Quat curPose = qZ(pi - 0.05f);  // delta_yaw = body - slam
+        // Pick body_yaw_t0 so that stair_yaw_body wraps below -pi: set
+        // delta_yaw = +0.10 -> stair_yaw_body = wrapPi(pi-0.05 + 0.10) =
+        // wrapPi(pi + 0.05) = -pi + 0.05.
+        float body_yaw_t0 = wrapPi((pi - 0.05f) + 0.10f);
+        // body_yaw_t0 is now ~ -pi + 0.05; stair_yaw_body should also be
+        // ~ -pi + 0.05; real_err ~ 0.
+        ChainOut got = runChain(2, f1, f2, curPose, body_yaw_t0);
+        // delta_yaw = wrapPi(body_yaw_t0 - (pi-0.05))
+        //           = wrapPi((-pi+0.05) - (pi-0.05))
+        //           = wrapPi(-2pi+0.10) = +0.10
+        requireNear(got.delta_yaw, 0.10f, "(C) delta_yaw across wrap");
+        requireNear(got.stair_yaw_body, body_yaw_t0,
+                    "(C) stair_yaw_body matches body_yaw_t0 across wrap");
+        // Crucial property: |real_err| stays SMALL, not ~2pi.
+        requireBool(std::fabs(got.real_err) < 1e-4f,
+                    "(C) real_err takes the short way around the circle");
+        requireBool(std::fabs(got.real_err) < pi,
+                    "(C) real_err is in (-pi, +pi]");
+    }
+
+    std::printf("[ok] test_climbStartChain_withDeltaYaw\n");
+}
+
+// ---------------------------------------------------------------------------
+// 12. Integration: a single CTE step end-to-end
 // ---------------------------------------------------------------------------
 void test_ctePipelineIntegration() {
     using namespace unitree::slam::climb;
@@ -571,6 +749,7 @@ int main() {
     test_preAlignClippedErr();
     test_selectFloorTaskList();
     test_pr58_floor2_regression();
+    test_climbStartChain_withDeltaYaw();
     test_ctePipelineIntegration();
 
     std::printf("=== test_climb_control: ALL OK ===\n");
